@@ -1,5 +1,17 @@
 server:
-  port: 7001
+  port: 7001 # 7000-series
+
 spring:
   datasource:
     url: jdbc:postgresql://localhost:5432/finsphere_auth
+    username: fsn_user
+    password: fsn@123
+  jpa:
+    hibernate:
+      ddl-auto: update
+    show-sql: true
+
+eureka:
+  client:
+    service-url:
+      defaultZone: http://localhost:7761/eureka/
