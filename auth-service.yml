@@ -5,11 +5,16 @@ spring:
   datasource:
     url: jdbc:postgresql://localhost:5432/finsphere_auth
     username: fsn_user
-    password: fsn@123
+    password: fsn@123 # Use the actual password you set for Postgres
+    driver-class-name: org.postgresql.Driver
   jpa:
     hibernate:
       ddl-auto: update
     show-sql: true
+    properties:
+      hibernate:
+        # Adding this helps Hibernate start even if the connection is slow
+        dialect: org.hibernate.dialect.PostgreSQLDialect
 
 eureka:
   client:
