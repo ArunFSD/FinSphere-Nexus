@@ -1,0 +1,10 @@
+server:
+  port: 7761 # Your 7000-series discovery port
+
+eureka:
+  instance:
+    hostname: localhost
+  client:
+    # Eureka doesn't need to register with itself
+    register-with-eureka: false
+    fetch-registry: false

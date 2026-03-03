@@ -1,0 +1,5 @@
+server:
+  port: 7001
+spring:
+  datasource:
+    url: jdbc:postgresql://localhost:5432/finsphere_auth
