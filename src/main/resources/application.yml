@@ -1,0 +1,11 @@
+server:
+  port: 7761 # Force it to 7761 immediately
+
+spring:
+  application:
+    name: discovery-server
+  config:
+    import: "optional:configserver:http://localhost:7888"
+  cloud:
+    config:
+      label: infra-conf

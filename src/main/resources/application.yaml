@@ -1,8 +1,0 @@
-spring:
-  application:
-    name: discovery-server
-  config:
-    import: "optional:configserver:http://localhost:7888" # Point to the Brain
-  cloud:
-    config:
-      label: infra-conf # Match your industrial branch name
