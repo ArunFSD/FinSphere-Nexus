@@ -1,4 +1,4 @@
-package com.finsphere.config_server;
+package com.finsphere.config;
 
 import org.junit.jupiter.api.Test;
 import org.springframework.boot.test.context.SpringBootTest;
