@@ -1,5 +1,5 @@
 server:
-  port: 8888
+  port: 7888
 
 spring:
   application:
@@ -8,6 +8,8 @@ spring:
     config:
       server:
         git:
-          # This points the Java app to your local YAML folder
+          # Try removing one slash or using the ${user.home} shortcut
           uri: file://${user.home}/personal_workspace/FinSphere-Nexus/config-repo
-          default-label: main
+          default-label: infra-conf
+          # Add this to bypass strict Git host checking locally
+          clone-on-start: true
