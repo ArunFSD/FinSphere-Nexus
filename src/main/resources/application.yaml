@@ -1,0 +1,13 @@
+server:
+  port: 8888
+
+spring:
+  application:
+    name: config-server
+  cloud:
+    config:
+      server:
+        git:
+          # This points the Java app to your local YAML folder
+          uri: file://${user.home}/personal_workspace/FinSphere-Nexus/config-repo
+          default-label: main
