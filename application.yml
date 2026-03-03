@@ -1,5 +1,0 @@
-# All services will use 7761 for Eureka
-eureka:
-  client:
-    service-url:
-      defaultZone: http://localhost:7761/eureka/
