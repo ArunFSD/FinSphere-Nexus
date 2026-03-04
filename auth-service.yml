@@ -20,3 +20,8 @@ eureka:
   client:
     service-url:
       defaultZone: http://localhost:7761/eureka/
+
+finsphere:
+    jwt:
+      secret: "YourVeryLongSuperSecretKeyForFinSphereNexus2026!!" # Min 32 chars
+      expirationMs: 86400000 # 24 Hours
