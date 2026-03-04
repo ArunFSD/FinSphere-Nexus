@@ -57,7 +57,8 @@ public class AuthService {
         return "Registration successful for " + profile.getFullName();
     }
 
-    public String login(LoginRequest loginRequest, String ipAddress, String userAgent, HttpServletResponse response) {
+    public String login(LoginRequest loginRequest, String ipAddress, String userAgent, HttpServletResponse response)
+            throws Exception {
         // 1. Find user by Phone or Email (Identifier)
         User user = userRepository.findByIdentifier(loginRequest.getIdentifier())
                 .orElseThrow(() -> new RuntimeException("Invalid credentials"));

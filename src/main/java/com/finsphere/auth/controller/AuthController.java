@@ -30,7 +30,7 @@ public class AuthController {
     public ResponseEntity<String> login(
             @RequestBody LoginRequest loginRequest,
             HttpServletRequest request,
-            HttpServletResponse response) {
+            HttpServletResponse response) throws Exception {
 
         String ip = request.getRemoteAddr();
         String ua = request.getHeader("User-Agent");
