@@ -25,3 +25,8 @@ finsphere:
     jwt:
       secret: "YourVeryLongSuperSecretKeyForFinSphereNexus2026!!" # Min 32 chars
       expirationMs: 86400000 # 24 Hours
+
+spring:
+  data:
+    redis:
+      port: 7379
