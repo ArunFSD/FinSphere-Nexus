@@ -11,8 +11,10 @@ import com.finsphere.auth.repository.UserRepository;
 import com.finsphere.auth.repository.UserSessionRepository;
 import com.finsphere.auth.security.JwtUtils;
 import jakarta.servlet.http.Cookie;
+import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 import lombok.RequiredArgsConstructor;
+import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -90,5 +92,33 @@ public class AuthService {
         response.addCookie(cookie);
 
         return "Login successful for " + user.getPhoneNumber();
+    }
+
+    public void logout(HttpServletRequest request, HttpServletResponse response) {
+        // 1. Extract Token from Cookie
+        String token = null;
+        if (request.getCookies() != null) {
+            for (Cookie cookie : request.getCookies()) {
+                if ("fsn_auth_token".equals(cookie.getName())) {
+                    token = cookie.getValue();
+                    break;
+                }
+            }
+        }
+
+        // 2. Remove from Redis (Port 7379)
+        if (token != null) {
+            sessionRepository.deleteById(token);
+        }
+
+        // 3. Overwrite Cookie with "Expired" status
+        Cookie cookie = new Cookie("fsn_auth_token", null);
+        cookie.setPath("/");
+        cookie.setHttpOnly(true);
+        cookie.setMaxAge(0); // This tells the browser to delete it immediately
+        response.addCookie(cookie);
+
+        // 4. Clear Spring Security Context
+        SecurityContextHolder.clearContext();
     }
 }

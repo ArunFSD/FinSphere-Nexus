@@ -27,7 +27,7 @@ public class CustomerProfile {
     private String address;
 
     @OneToOne
-    @MapsId
+    @MapsId // This tells Hibernate: "Take the ID from the User entity and put it here"
     @JoinColumn(name = "user_id")
     private User user;
 }
