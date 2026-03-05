@@ -5,6 +5,7 @@ import com.finsphere.auth.dto.RegistrationRequest;
 import com.finsphere.auth.entity.CustomerProfile;
 import com.finsphere.auth.entity.User;
 import com.finsphere.auth.entity.UserRole;
+import com.finsphere.auth.exception.DomainException;
 import com.finsphere.auth.mapper.UserMapper;
 import com.finsphere.auth.model.UserSession;
 import com.finsphere.auth.repository.UserRepository;
@@ -14,6 +15,7 @@ import jakarta.servlet.http.Cookie;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 import lombok.RequiredArgsConstructor;
+import org.springframework.http.HttpStatus;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
@@ -31,8 +33,25 @@ public class AuthService {
 
     @Transactional
     public String registerUser(RegistrationRequest request) throws Exception {
+
+        // We check this again in case someone bypasses the Controller @Valid
+        // Business Rule: Unique Identity Check (Heavyweight - DB Call)
         if (userRepository.existsByPhoneNumber(request.getPhoneNumber())) {
-            throw new RuntimeException("Phone number already exists");
+            throw new DomainException(
+                    HttpStatus.BAD_REQUEST,
+                    "Validation Failed",
+                    "Phone number is already registered");
+        }
+
+        // Email Check (Only if email is provided, since it's optional)
+        if (request.getEmail() != null && !request.getEmail().isBlank()) {
+            if (userRepository.existsByEmail(request.getEmail())) {
+                throw new DomainException(
+                        HttpStatus.BAD_REQUEST,
+                        "Validation Failed",
+                        "Email address is already registered"
+                );
+            }
         }
 
         // 1. Normalize phone BEFORE mapping
@@ -94,7 +113,7 @@ public class AuthService {
         return "Login successful for " + user.getPhoneNumber();
     }
 
-    public void logout(HttpServletRequest request, HttpServletResponse response) {
+    public void logout(HttpServletRequest request, HttpServletResponse response) throws Exception {
         // 1. Extract Token from Cookie
         String token = null;
         if (request.getCookies() != null) {

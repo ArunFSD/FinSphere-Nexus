@@ -25,37 +25,56 @@ public class GlobalExceptionHandler {
             errors.put(fieldName, errorMessage);
         });
 
-        ErrorResponse response = ErrorResponse.builder()
-                .status(HttpStatus.BAD_REQUEST.value())
-                .message("Validation Failed")
-                .timestamp(LocalDateTime.now())
-                .errors(errors)
-                .build();
-
-        return new ResponseEntity<>(response, HttpStatus.BAD_REQUEST);
+        return buildErrorResponse(HttpStatus.BAD_REQUEST, "Validation Failed", errors);
     }
 
-    // 2. Handle Business Logic Errors (e.g., User Already Exists)
+    // 2. Handle Business Logic Errors (e.g., Manual Checks in Service Layer)
     @ExceptionHandler(RuntimeException.class)
     public ResponseEntity<ErrorResponse> handleRuntimeException(RuntimeException ex) {
-        ErrorResponse response = ErrorResponse.builder()
-                .status(HttpStatus.BAD_REQUEST.value())
-                .message(ex.getMessage())
-                .timestamp(LocalDateTime.now())
-                .build();
+        Map<String, String> errors = new HashMap<>();
 
-        return new ResponseEntity<>(response, HttpStatus.BAD_REQUEST);
+        /* Industrial Trick: We put the exception message inside the errors map
+           under the key "error" so the frontend always finds a consistent structure.
+        */
+        errors.put("error", ex.getMessage());
+
+        return buildErrorResponse(HttpStatus.BAD_REQUEST, "Failed", errors);
     }
 
     // 3. Handle Generic Internal Errors
     @ExceptionHandler(Exception.class)
     public ResponseEntity<ErrorResponse> handleGlobalException(Exception ex) {
-        ErrorResponse response = ErrorResponse.builder()
-                .status(HttpStatus.INTERNAL_SERVER_ERROR.value())
-                .message("An unexpected error occurred")
-                .timestamp(LocalDateTime.now())
-                .build();
+        // For generic exceptions, we keep the error map empty but non-null
+        return buildErrorResponse(
+                HttpStatus.INTERNAL_SERVER_ERROR,
+                "An unexpected error occurred",
+                new HashMap<>()
+        );
+    }
 
-        return new ResponseEntity<>(response, HttpStatus.INTERNAL_SERVER_ERROR);
+    // 4. Handle Specific FinSphere Business & Security Errors
+    @ExceptionHandler(DomainException.class)
+    public ResponseEntity<ErrorResponse> handleDomainException(DomainException ex) {
+        Map<String, String> errors = new HashMap<>();
+        errors.put("error", ex.getMessage());
+
+        return buildErrorResponse(ex.getStatus(), ex.getTopLevelMessage(), errors);
+    }
+
+    /**
+     * Helper method to maintain a strictly consistent response format across all layers.
+     */
+    private ResponseEntity<ErrorResponse> buildErrorResponse(
+            HttpStatus status,
+            String message,
+            Map<String, String> errors
+    ) {
+        ErrorResponse response = ErrorResponse.builder()
+                .status(status.value())
+                .message(message)
+                .timestamp(LocalDateTime.now())
+                .errors(errors) // This will now always be a non-null JSON object {}
+                .build();
+        return new ResponseEntity<>(response, status);
     }
 }

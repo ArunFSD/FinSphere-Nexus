@@ -1,8 +1,11 @@
 spring:
   application:
     name: auth-service
+  profiles:
+    active: conf
   config:
     import: "optional:configserver:http://localhost:7888"
   cloud:
     config:
-      label: infra-conf
+      label: infra-conf  # The branch name in your git repo
+      fail-fast: true    # Recommended: Stops the app immediately if config fails

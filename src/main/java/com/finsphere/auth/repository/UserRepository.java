@@ -1,6 +1,7 @@
 package com.finsphere.auth.repository;
 
 import com.finsphere.auth.entity.User;
+import jakarta.validation.constraints.Email;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
@@ -13,4 +14,6 @@ public interface UserRepository extends JpaRepository<User, Long> {
     Optional<User> findByIdentifier(@Param("identifier") String identifier);
 
     boolean existsByPhoneNumber(String phoneNumber);
+
+    boolean existsByEmail(String email);
 }

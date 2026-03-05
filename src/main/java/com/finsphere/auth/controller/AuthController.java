@@ -6,12 +6,14 @@ import com.finsphere.auth.entity.User;
 import com.finsphere.auth.entity.UserRole;
 import com.finsphere.auth.repository.UserRepository;
 import com.finsphere.auth.service.AuthService;
+import com.finsphere.auth.validation.ValidationGroups;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.crypto.password.PasswordEncoder;
+import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.*;
 
 @RestController
@@ -22,7 +24,9 @@ public class AuthController {
     private final AuthService authService;
 
     @PostMapping("/register")
-    public ResponseEntity<String> register(@Valid @RequestBody RegistrationRequest request) throws Exception {
+    public ResponseEntity<String> register(
+            @Validated(ValidationGroups.Sequence.class)
+            @RequestBody RegistrationRequest request ) throws Exception {
         return ResponseEntity.ok(authService.registerUser(request));
     }
 
@@ -39,7 +43,9 @@ public class AuthController {
     }
 
     @PostMapping("/logout")
-    public ResponseEntity<String> logout(HttpServletRequest request, HttpServletResponse response) {
+    public ResponseEntity<String> logout(
+            HttpServletRequest request,
+            HttpServletResponse response) throws Exception {
         authService.logout(request, response);
         return ResponseEntity.ok("Logged out successfully");
     }

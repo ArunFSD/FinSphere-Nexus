@@ -22,7 +22,7 @@ public class User {
     private Long id;
 
     @NotBlank(message = "Phone number is mandatory")
-    @Pattern(regexp = "^[6-9]\\d{9}$", message = "Invalid Indian phone number")
+    @Pattern(regexp = "^[6-9]\\d{9}$", message = "Invalid phone number")
     @Column(unique = true, nullable = false)
     private String phoneNumber;
 
@@ -41,8 +41,7 @@ public class User {
     @Column(name = "is_active", nullable = false)
     private Boolean isActive = true; // Your ActiveFlag
 
-    @OneToOne(fetch = FetchType.LAZY, cascade = CascadeType.ALL)
-    @JoinColumn(name = "profile_id", referencedColumnName = "id")
+    @OneToOne(mappedBy = "user", cascade = CascadeType.ALL, fetch = FetchType.LAZY)
     private CustomerProfile profile;
 
     @Column(name = "created_at", updatable = false)
