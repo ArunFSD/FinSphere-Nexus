@@ -15,6 +15,7 @@ spring:
       hibernate:
         # Adding this helps Hibernate start even if the connection is slow
         dialect: org.hibernate.dialect.PostgreSQLDialect
+        default_schema: fsn
 
 eureka:
   client:
