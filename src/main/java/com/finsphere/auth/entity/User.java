@@ -9,7 +9,10 @@ import lombok.*;
 import java.time.LocalDateTime;
 
 @Entity
-@Table(name = "users")
+@Table(name = "users", indexes = {
+        @Index(name = "idx_user_phone", columnList = "phoneNumber"),
+        @Index(name = "idx_user_email", columnList = "email")
+})
 @Getter
 @Setter
 @NoArgsConstructor
@@ -23,15 +26,15 @@ public class User {
 
     @NotBlank(message = "Phone number is mandatory")
     @Pattern(regexp = "^[6-9]\\d{9}$", message = "Invalid phone number")
-    @Column(unique = true, nullable = false)
+    @Column(unique = true, nullable = false, length = 15)
     private String phoneNumber;
 
     @Email(message = "Invalid email format")
-    @Column(unique = true)
+    @Column(unique = true, length = 100)
     private String email;
 
     @NotBlank(message = "Password is mandatory")
-    @Column(nullable = false)
+    @Column(nullable = false, length = 255)
     private String password;
 
     @Enumerated(EnumType.STRING)

@@ -34,7 +34,6 @@ public class AuthService {
     @Transactional
     public String registerUser(RegistrationRequest request) throws Exception {
 
-        // We check this again in case someone bypasses the Controller @Valid
         // Business Rule: Unique Identity Check (Heavyweight - DB Call)
         if (userRepository.existsByPhoneNumber(request.getPhoneNumber())) {
             throw new DomainException(

@@ -18,13 +18,14 @@ public class CustomerProfile {
     private Long id; // Will share the same ID as User (Shared Primary Key)
 
     @NotBlank(message = "Full name is mandatory")
+    @Column(name = "full_name", length = 100)
     private String fullName;
 
-    @Column(name = "care_of")
+    @Column(name = "care_of", length = 100)
     private String careOf;
 
     @NotBlank(message = "Address is mandatory")
-    @Column(columnDefinition = "TEXT")
+    @Column(name = "address", length = 500)
     private String address;
 
     @OneToOne
