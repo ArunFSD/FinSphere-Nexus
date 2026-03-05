@@ -49,7 +49,7 @@ public class AuthService {
                 throw new DomainException(
                         HttpStatus.BAD_REQUEST,
                         "Validation Failed",
-                        "Email address is already registered"
+                        "Email is already registered"
                 );
             }
         }

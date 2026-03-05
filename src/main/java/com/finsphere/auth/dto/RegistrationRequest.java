@@ -19,6 +19,11 @@ public class RegistrationRequest {
             message = "Full name can only contain letters and spaces",
             groups = SecondOrder.class
     )
+    @Size(
+            max = 100,
+            message = "Full name must not exceed 100 characters",
+            groups = ThirdOrder.class
+    )
     private String fullName;
 
     @NotBlank(
@@ -27,7 +32,7 @@ public class RegistrationRequest {
     )
     @Pattern(
             regexp = "^[6-9]\\d{9}$",
-            message = "Invalid Indian mobile number",
+            message = "Invalid phone number",
             groups = SecondOrder.class
     )
     private String phoneNumber;
@@ -35,6 +40,11 @@ public class RegistrationRequest {
     @Email(
             message = "Invalid email format",
             groups = SecondOrder.class
+    )
+    @Size(
+            max = 100,
+            message = "Email must not exceed 100 characters",
+            groups = ThirdOrder.class
     )
     private String email;
 
@@ -47,11 +57,21 @@ public class RegistrationRequest {
             message = "Password must be at least 8 characters",
             groups = SecondOrder.class
     )
+    @Size(
+            max = 30,
+            message = "Password must not exceed 30 characters",
+            groups = ThirdOrder.class
+    )
     private String password;
 
     @NotBlank(
             message = "Address is mandatory",
             groups = FirstOrder.class
+    )
+    @Size(
+            max = 500,
+            message = "Address must not exceed 500 characters",
+            groups = SecondOrder.class
     )
     private String address;
 
@@ -59,6 +79,11 @@ public class RegistrationRequest {
             regexp = "^[a-zA-Z\\s]*$",
             message = "Care of (C/O) can only contain letters and spaces",
             groups = SecondOrder.class
+    )
+    @Size(
+            max = 100,
+            message = "Care of (C/O) must not exceed 100 characters",
+            groups = ThirdOrder.class
     )
     private String careOf;
 }
