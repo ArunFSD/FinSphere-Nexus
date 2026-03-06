@@ -55,10 +55,8 @@ public class GlobalExceptionHandler {
     // 4. Handle Specific FinSphere Business & Security Errors
     @ExceptionHandler(DomainException.class)
     public ResponseEntity<ErrorResponse> handleDomainException(DomainException ex) {
-        Map<String, String> errors = new HashMap<>();
-        errors.put("error", ex.getMessage());
-
-        return buildErrorResponse(ex.getStatus(), ex.getTopLevelMessage(), errors);
+        // We pass ex.getErrors() directly to your helper method
+        return buildErrorResponse(ex.getStatus(), ex.getTopLevelMessage(), ex.getErrors());
     }
 
     /**
