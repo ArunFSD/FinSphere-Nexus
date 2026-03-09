@@ -2,17 +2,14 @@ package com.finsphere.auth.controller;
 
 import com.finsphere.auth.dto.LoginRequest;
 import com.finsphere.auth.dto.RegistrationRequest;
-import com.finsphere.auth.entity.User;
-import com.finsphere.auth.entity.UserRole;
-import com.finsphere.auth.repository.UserRepository;
+import com.finsphere.auth.model.UserContext;
 import com.finsphere.auth.service.AuthService;
+import com.finsphere.auth.util.CookieUtils;
 import com.finsphere.auth.validation.ValidationGroups;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
-import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
-import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.*;
 
@@ -22,12 +19,18 @@ import org.springframework.web.bind.annotation.*;
 public class AuthController {
 
     private final AuthService authService;
+    private final CookieUtils cookie;
 
     @PostMapping("/register")
     public ResponseEntity<String> register(
             @Validated(ValidationGroups.Sequence.class)
-            @RequestBody RegistrationRequest request ) throws Exception {
-        return ResponseEntity.ok(authService.registerUser(request));
+            @RequestBody RegistrationRequest regRequest,
+            HttpServletRequest request) throws Exception {
+
+        String ip = request.getRemoteAddr();
+        String ua = request.getHeader("User-Agent");
+
+        return ResponseEntity.ok(authService.registerUser(regRequest, ip, ua));
     }
 
     @PostMapping("/login")
@@ -48,5 +51,16 @@ public class AuthController {
             HttpServletResponse response) throws Exception {
         authService.logout(request, response);
         return ResponseEntity.ok("Logged out successfully");
+    }
+
+    @GetMapping("/validate")
+    public ResponseEntity<UserContext> validateToken(HttpServletRequest request) {
+        // 1. Extract token from Cookie
+        String token = cookie.extractToken(request);
+
+        // 2. Business Logic: Check JWT and Redis (handled in service)
+        UserContext identity = authService.validateSession(token);
+
+        return ResponseEntity.ok(identity);
     }
 }

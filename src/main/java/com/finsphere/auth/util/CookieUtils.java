@@ -1,8 +1,11 @@
-package com.finsphere.auth.service;
+package com.finsphere.auth.util;
 
 import jakarta.servlet.http.Cookie;
+import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 import org.springframework.stereotype.Component;
+
+import java.util.Arrays;
 
 @Component
 public class CookieUtils {
@@ -22,6 +25,17 @@ public class CookieUtils {
         cookie.setHttpOnly(true);
         cookie.setMaxAge(0); // This tells the browser to delete it immediately
         response.addCookie(cookie);
+    }
+
+    public String extractToken(HttpServletRequest request) {
+        if (request.getCookies() == null) {
+            return null;
+        }
+        return Arrays.stream(request.getCookies())
+                .filter(cookie -> "fsn_auth_token".equals(cookie.getName()))
+                .map(Cookie::getValue)
+                .findFirst()
+                .orElse(null);
     }
 
 }

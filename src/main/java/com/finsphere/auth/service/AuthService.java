@@ -7,8 +7,12 @@ import com.finsphere.auth.entity.User;
 import com.finsphere.auth.entity.UserRole;
 import com.finsphere.auth.exception.DomainException;
 import com.finsphere.auth.mapper.UserMapper;
+import com.finsphere.auth.model.UserContext;
+import com.finsphere.auth.model.UserSession;
 import com.finsphere.auth.repository.UserRepository;
 import com.finsphere.auth.security.JwtUtils;
+import com.finsphere.auth.util.CookieUtils;
+import com.finsphere.auth.util.RedisUtils;
 import jakarta.servlet.http.Cookie;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
@@ -29,18 +33,19 @@ public class AuthService {
     private final UserRepository userRepository;
     private final PasswordEncoder passwordEncoder;
     private final UserMapper userMapper;
-    private final JwtUtils jwtUtils;
+    private final JwtUtils jwt;
     private final CookieUtils cookie;
     private final RedisUtils redis;
+    private final AuditService auditService;
 
     @Transactional
-    public String registerUser(RegistrationRequest request) throws Exception {
+    public String registerUser(RegistrationRequest request, String ipAddress, String userAgent) throws Exception {
         Map<String, String> businessErrors = new HashMap<>();
 
+        // --- 1. VALIDATION & PROBING AUDIT ---
         if (userRepository.existsByPhoneNumber(request.getPhoneNumber())) {
             businessErrors.put("phoneNumber", "Phone number is already registered");
         }
-
         if (request.getEmail() != null && !request.getEmail().isBlank()) {
             if (userRepository.existsByEmail(request.getEmail())) {
                 businessErrors.put("email", "Email is already registered");
@@ -48,33 +53,48 @@ public class AuthService {
         }
 
         if (!businessErrors.isEmpty()) {
-            throw new DomainException(
-                    HttpStatus.BAD_REQUEST,
-                    "Validation Failed",
-                    businessErrors
+            // Record the failure: Someone is trying to register with existing data
+            auditService.record(
+                    null,
+                    request.getPhoneNumber(),
+                    request.getEmail(),
+                    "REGISTER_FAILURE",
+                    ipAddress,
+                    userAgent,
+                    "Validation failed: " + businessErrors.values()
             );
+
+            throw new DomainException(HttpStatus.BAD_REQUEST, "Validation Failed", businessErrors);
         }
 
-        // 1. Normalize phone BEFORE mapping
+        // --- 2. NORMALIZATION & MAPPING ---
         String rawPhone = request.getPhoneNumber().replaceAll("[^0-9]", "");
         String normalizedPhone = rawPhone.substring(Math.max(0, rawPhone.length() - 10));
         request.setPhoneNumber(normalizedPhone);
 
-        // 2. Map DTO to Entities using MapStruct
         User user = userMapper.toEntity(request);
         CustomerProfile profile = userMapper.toProfile(request);
 
-        // 3. Manual Industrial Logic
         user.setPassword(passwordEncoder.encode(request.getPassword()));
         user.setRole(UserRole.CUSTOMER);
         user.setIsActive(true);
 
-        // 4. Link them (Bi-directional link)
         user.setProfile(profile);
         profile.setUser(user);
 
-        // 5. Save (CascadeType.ALL handles the profile automatically)
-        userRepository.save(user);
+        // --- 3. PERSISTENCE ---
+        User savedUser = userRepository.save(user);
+
+        // --- 4. SUCCESS AUDIT ---
+        auditService.record(
+                savedUser.getId(),
+                savedUser.getPhoneNumber(),
+                savedUser.getEmail(),
+                "REGISTER_SUCCESS",
+                ipAddress,
+                userAgent,
+                "New account created for: " + profile.getFullName()
+        );
 
         return "Registration successful for " + profile.getFullName();
     }
@@ -82,61 +102,127 @@ public class AuthService {
     public String login(LoginRequest loginRequest, String ipAddress, String userAgent, HttpServletResponse response)
             throws Exception {
 
-        // 1. Find user by Phone or Email
-        User user = userRepository.findByIdentifier(loginRequest.getIdentifier())
-                .orElseThrow(() -> new DomainException(
+        String identifier = loginRequest.getIdentifier();
+        boolean isEmailInput = identifier.contains("@");
+
+        try {
+            // 1. Find user by Phone or Email
+            User user = userRepository.findByIdentifier(identifier)
+                    .orElseThrow(() -> new DomainException(
+                            HttpStatus.UNAUTHORIZED,
+                            "Authentication Failed",
+                            "login", "Invalid phone number / email"
+                    ));
+
+            // 2. Validate Password
+            if (!passwordEncoder.matches(loginRequest.getPassword(), user.getPassword())) {
+                throw new DomainException(
                         HttpStatus.UNAUTHORIZED,
                         "Authentication Failed",
-                        "login", "Invalid phone number / email"
-                ));
+                        "login", "Your password is incorrect"
+                );
+            }
 
-        // 2. Validate Password
-        if (!passwordEncoder.matches(loginRequest.getPassword(), user.getPassword())) {
-            throw new DomainException(
-                    HttpStatus.UNAUTHORIZED,
-                    "Authentication Failed",
-                    "login", "Your password is incorrect"
+            // Check for Concurrent Session
+            if (!redis.getSessionDetails(user).isEmpty()) {
+                throw new DomainException(HttpStatus.CONFLICT, "Active Session Found",
+                        "login", "You are already logged in on another device. Please logout first.");
+            }
+
+            // 3. Generate JWT
+            String token = jwt.generateToken(user.getPhoneNumber(), user.getRole().name());
+
+            // 4. Store Session in Redis
+            redis.saveSessionToRedis(token, user, ipAddress, userAgent);
+
+            // 5. Create HttpOnly Cookie
+            cookie.setHttpOnlyCookie(response, token);
+
+            // --- AUDIT SUCCESS ---
+            auditService.record(
+                    user.getId(),
+                    user.getPhoneNumber(),
+                    user.getEmail(),
+                    "LOGIN_SUCCESS",
+                    ipAddress,
+                    userAgent,
+                    "Authentication successful"
             );
+
+            return "Login successful for " + user.getPhoneNumber();
+
+        } catch (Exception e) {
+            // --- AUDIT FAILURE ---
+            // We record the failure even if the user doesn't exist (userId will be null)
+            auditService.record(
+                    null,
+                    isEmailInput ? null : identifier,
+                    isEmailInput ? identifier : null,
+                    "LOGIN_FAILURE",
+                    ipAddress,
+                    userAgent,
+                    e.getMessage() // Records why it failed (Invalid user, Wrong pass, etc.)
+            );
+            // Re-throw the exception so the GlobalExceptionHandler takes over
+            throw e;
         }
-
-        if (!redis.getSessionDetails(user).isEmpty()) {
-            throw new DomainException(HttpStatus.CONFLICT, "Active Session Found",
-                    "login", "You are already logged in on another device. Please logout first.");
-        }
-
-        // 3. Generate JWT
-        String token = jwtUtils.generateToken(user.getPhoneNumber(), user.getRole().name());
-
-        // 4. Store Session in Redis
-        redis.saveSessionToRedis(token, user, ipAddress, userAgent);
-
-        // 5. Create HttpOnly Cookie
-        cookie.setHttpOnlyCookie(response, token);
-
-        return "Login successful for " + user.getPhoneNumber();
     }
 
     public void logout(HttpServletRequest request, HttpServletResponse response) throws Exception {
-        // 1. Extract Token from Cookie
-        String token = null;
-        if (request.getCookies() != null) {
-            for (Cookie cookie : request.getCookies()) {
-                if ("fsn_auth_token".equals(cookie.getName())) {
-                    token = cookie.getValue();
-                    break;
-                }
-            }
+        // 1. Extract Token from Cookie (Using your CookieUtils for cleaner code)
+        String token = cookie.extractToken(request);
+
+        if (token != null && !token.isBlank()) {
+            // 2. FETCH context from Redis BEFORE deleting
+            // We need the session data (userId, phone) to record WHO is logging out
+            redis.getSessionDetails(token).ifPresent(session -> {
+
+                // 3. Record the Logout in PostgreSQL Audit
+                auditService.record(
+                        session.getUserId(),
+                        session.getPhoneNumber(),
+                        null, // Email usually isn't in Redis session, but phone/ID is enough
+                        "LOGOUT",
+                        request.getRemoteAddr(),
+                        request.getHeader("User-Agent"),
+                        "User logged out successfully"
+                );
+
+                // 4. Remove from Redis (Port 7379)
+                redis.delSessionToRedis(token);
+            });
         }
 
-        // 2. Remove from Redis (Port 7379)
-        if (token != null) {
-            redis.delSessionToRedis(token);
-        }
-
-        // 3. Overwrite Cookie with "Expired" status
+        // 5. Overwrite Cookie with "Expired" status
         cookie.delHttpOnlyCookie(response);
 
-        // 4. Clear Spring Security Context
+        // 6. Clear Spring Security Context
         SecurityContextHolder.clearContext();
+    }
+
+    public UserContext validateSession(String token) {
+        if (token == null || token.isEmpty()) {
+            throw new DomainException(HttpStatus.UNAUTHORIZED, "Security Alert", "token", "Session token not found");
+        }
+
+        // 1. Validate JWT Signature & Expiration
+        if (!jwt.validateToken(token)) {
+            throw new DomainException(HttpStatus.UNAUTHORIZED, "Session Expired", "token", "Session has timed out");
+        }
+
+        // 2. Validate Redis Session (Crucial for Logout/Single-Session logic)
+        UserSession session =  redis.getSessionDetails(token)
+                .orElseThrow(() -> new DomainException(
+                        HttpStatus.UNAUTHORIZED,
+                        "Invalid Session",
+                        "token", "Session has been terminated")
+                );
+
+        // 3. Return the Identity context (Traceability)
+        return UserContext.builder()
+                .userId(session.getUserId())
+                .phoneNumber(session.getPhoneNumber())
+                .role(session.getRole())
+                .build();
     }
 }

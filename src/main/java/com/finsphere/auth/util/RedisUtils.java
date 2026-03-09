@@ -1,4 +1,4 @@
-package com.finsphere.auth.service;
+package com.finsphere.auth.util;
 
 import com.finsphere.auth.entity.User;
 import com.finsphere.auth.model.UserSession;
@@ -7,6 +7,7 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Component;
 
 import java.util.List;
+import java.util.Optional;
 
 @Component
 @RequiredArgsConstructor
@@ -14,17 +15,22 @@ public class RedisUtils {
 
     private final UserSessionRepository sessionRepository; // Redis Repository
 
+    public Optional<UserSession> getSessionDetails(String token) {
+        return sessionRepository.findById(token);
+    }
+
     public List<UserSession> getSessionDetails(User user){
         return sessionRepository.findByPhoneNumber(user.getPhoneNumber());
     }
 
     public void saveSessionToRedis(String token, User user, String ipAddress, String userAgent) {
         UserSession session = UserSession.builder()
-                .sessionId(token)
+                .token(token)
+                .userId(user.getId())
                 .phoneNumber(user.getPhoneNumber())
+                .role(user.getRole().name())
                 .loginIp(ipAddress)
                 .userAgent(userAgent)
-                .role(user.getRole().name())
                 .build();
         sessionRepository.save(session);
     }
@@ -32,5 +38,7 @@ public class RedisUtils {
     public void delSessionToRedis(String token) {
         sessionRepository.deleteById(token);
     }
+    
+    
 
 }
