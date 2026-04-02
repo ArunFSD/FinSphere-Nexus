@@ -1,0 +1,10 @@
+spring:
+  application:
+    name: auth-service
+  cloud:
+    config:
+      uri: http://localhost:7888
+      label: infra-conf
+      fail-fast: true
+  profiles:
+    active: conf

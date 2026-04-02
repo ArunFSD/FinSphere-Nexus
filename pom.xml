@@ -131,6 +131,12 @@
             <artifactId>loki-logback-appender</artifactId>
             <version>1.5.1</version>
         </dependency>
+
+        <dependency>
+            <groupId>org.springframework.cloud</groupId>
+            <artifactId>spring-cloud-starter-bootstrap</artifactId>
+        </dependency>
+
     </dependencies>
 
     <dependencyManagement>
