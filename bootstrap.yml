@@ -1,0 +1,11 @@
+spring:
+  main:
+    web-application-type: reactive
+    allow-bean-definition-overriding: true
+  application:
+    name: gateway-service
+  cloud:
+    config:
+      uri: http://localhost:7888
+      name: gateway-service-conf
+      fail-fast: true
