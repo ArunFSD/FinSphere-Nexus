@@ -9,19 +9,19 @@ spring:
         - id: auth-service
           uri: lb://auth-service
           predicates:
-            - Path=/api/v1/auth/**
+            - Path=/auth/**
 
         # Route for Chit Fund Logic
         - id: chit-service
           uri: lb://chit-logic-service
           predicates:
-            - Path=/api/v1/chits/**
+            - Path=/chits/**
 
         # Route for Daily Finance/Loans
         - id: lending-service
           uri: lb://lending-service
           predicates:
-            - Path=/api/v1/loans/**
+            - Path=/loans/**
 
 eureka:
   client:
