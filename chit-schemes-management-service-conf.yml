@@ -14,7 +14,7 @@ spring:
     properties:
       hibernate:
         dialect: org.hibernate.dialect.PostgreSQLDialect
-        default_schema: fsn_schemes
+        default_schema: fsn_chit_management
 
 eureka:
   client:
