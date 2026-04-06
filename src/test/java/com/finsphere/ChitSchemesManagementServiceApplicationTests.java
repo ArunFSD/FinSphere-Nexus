@@ -1,0 +1,13 @@
+package com.finsphere;
+
+import org.junit.jupiter.api.Test;
+import org.springframework.boot.test.context.SpringBootTest;
+
+@SpringBootTest
+class ChitSchemesManagementServiceApplicationTests {
+
+	@Test
+	void contextLoads() {
+	}
+
+}

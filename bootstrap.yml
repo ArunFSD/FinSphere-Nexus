@@ -1,0 +1,9 @@
+spring:
+  application:
+    name: chit-schemes-management-service # This must match the name of the file in your config-repo
+  cloud:
+    config:
+      uri: http://localhost:7888
+      fail-fast: true
+  profiles:
+    active: conf
