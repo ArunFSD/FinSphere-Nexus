@@ -15,7 +15,15 @@ spring:
       hibernate:
         dialect: org.hibernate.dialect.PostgreSQLDialect
         default_schema: fsn_chit_management
-
+  kafka:
+    bootstrap-servers: localhost:7092
+    consumer:
+      group-id: chit-service-group
+      auto-offset-reset: earliest
+      key-deserializer: org.apache.kafka.common.serialization.StringDeserializer
+      value-deserializer: org.springframework.kafka.support.serializer.JsonDeserializer
+      properties:
+        spring.json.trusted.packages: "com.finsphere.common.*"
 eureka:
   client:
     service-url:

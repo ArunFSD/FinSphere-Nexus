@@ -26,6 +26,11 @@ spring:
     redis:
       host: localhost
       port: 7379
+  kafka:
+    bootstrap-servers: localhost:7092
+    producer:
+      key-serializer: org.apache.kafka.common.serialization.StringSerializer
+      value-serializer: org.springframework.kafka.support.serializer.JsonSerializer
 
 eureka:
   client:
