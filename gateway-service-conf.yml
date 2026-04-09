@@ -4,28 +4,33 @@ server:
 spring:
   application:
     name: gateway-service
+
   cloud:
     gateway:
       routes:
-        # Route for Login/Register
+        # Route for Auth Service
         - id: auth-service
           uri: lb://auth-service
           predicates:
             - Path=/auth/**
 
-        # Route for Chit Fund Logic
+        # Route for Chit Fund (Updated to match your service name)
         - id: chit-service
-          uri: lb://chit-logic-service
+          uri: lb://chit-schemes-management-service
           predicates:
             - Path=/chits/**
 
-        # Route for Daily Finance/Loans
+        # Route for Lending
         - id: lending-service
           uri: lb://lending-service
           predicates:
             - Path=/loans/**
 
 eureka:
+  instance:
+    instance-id: ${spring.application.name}:${server.port}
+    hostname: localhost
+    prefer-ip-address: true
   client:
     service-url:
       defaultZone: http://localhost:7761/eureka/
