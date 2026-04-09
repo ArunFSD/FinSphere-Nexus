@@ -1,10 +1,12 @@
 spring:
   application:
     name: auth-service
+  main:
+    allow-bean-definition-overriding: true
   cloud:
     config:
       uri: http://localhost:7888
-      label: infra-conf
+      name: auth-service
       fail-fast: true
   profiles:
     active: conf

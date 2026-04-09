@@ -13,7 +13,7 @@ import com.finsphere.auth.repository.UserRepository;
 import com.finsphere.auth.security.JwtUtils;
 import com.finsphere.auth.util.CookieUtils;
 import com.finsphere.auth.util.RedisUtils;
-import jakarta.servlet.http.Cookie;
+import com.finsphere.common.dto.events.UserUpdateEvent;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 import lombok.RequiredArgsConstructor;
@@ -37,6 +37,7 @@ public class AuthService {
     private final CookieUtils cookie;
     private final RedisUtils redis;
     private final AuditService auditService;
+    private final UserEventProducer userEventProducer;
 
     @Transactional
     public String registerUser(RegistrationRequest request, String ipAddress, String userAgent) throws Exception {
@@ -95,6 +96,16 @@ public class AuthService {
                 userAgent,
                 "New account created for: " + profile.getFullName()
         );
+
+        // --- 5. KAFKA PRODUCER
+        UserUpdateEvent event = new UserUpdateEvent(
+                savedUser.getId(),
+                profile.getFullName(),
+                savedUser.getPhoneNumber(),
+                profile.getCareOf(),
+                savedUser.getIsActive()
+        );
+        userEventProducer.sendUserUpdate(event);
 
         return "Registration successful for " + profile.getFullName();
     }
@@ -211,7 +222,7 @@ public class AuthService {
         }
 
         // 2. Validate Redis Session (Crucial for Logout/Single-Session logic)
-        UserSession session =  redis.getSessionDetails(token)
+        UserSession session = redis.getSessionDetails(token)
                 .orElseThrow(() -> new DomainException(
                         HttpStatus.UNAUTHORIZED,
                         "Invalid Session",
