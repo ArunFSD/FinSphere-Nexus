@@ -1,9 +1,12 @@
 spring:
   application:
-    name: chit-schemes-management-service # This must match the name of the file in your config-repo
+    name: chit-schemes-management-service
+  main:
+    allow-bean-definition-overriding: true
   cloud:
     config:
       uri: http://localhost:7888
+      name: chit-schemes-management-service
       fail-fast: true
   profiles:
     active: conf

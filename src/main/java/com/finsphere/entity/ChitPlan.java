@@ -2,10 +2,10 @@ package com.finsphere.entity;
 
 import jakarta.persistence.*;
 import lombok.*;
-
 import java.math.BigDecimal;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
+import java.util.List;
 
 @Entity
 @Getter
@@ -59,7 +59,16 @@ public class ChitPlan {
     @Column(name = "updated_at")
     private LocalDateTime updatedAt = LocalDateTime.now();
 
-    // Logic: Auto-calculate amounts before saving
+    // --- ADDED MAPPINGS START ---
+
+    @OneToMany(mappedBy = "plan", cascade = CascadeType.ALL, fetch = FetchType.LAZY)
+    private List<ChitMonthlyCycle> monthlyCycles;
+
+    @OneToMany(mappedBy = "plan", cascade = CascadeType.ALL, fetch = FetchType.LAZY)
+    private List<ChitEnrollment> enrollments;
+
+    // --- ADDED MAPPINGS END ---
+
     @PrePersist
     @PreUpdate
     public void prePersist() {
