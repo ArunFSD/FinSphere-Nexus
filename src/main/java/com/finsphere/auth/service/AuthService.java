@@ -5,7 +5,6 @@ import com.finsphere.auth.dto.RegistrationRequest;
 import com.finsphere.auth.entity.CustomerProfile;
 import com.finsphere.auth.entity.User;
 import com.finsphere.auth.entity.UserRole;
-import com.finsphere.auth.exception.DomainException;
 import com.finsphere.auth.mapper.UserMapper;
 import com.finsphere.auth.model.UserContext;
 import com.finsphere.auth.model.UserSession;
@@ -13,7 +12,9 @@ import com.finsphere.auth.repository.UserRepository;
 import com.finsphere.auth.security.JwtUtils;
 import com.finsphere.auth.util.CookieUtils;
 import com.finsphere.auth.util.RedisUtils;
+import com.finsphere.common.dto.ApiResponse;
 import com.finsphere.common.dto.events.UserUpdateEvent;
+import com.finsphere.common.exception.DomainException;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 import lombok.RequiredArgsConstructor;
@@ -23,6 +24,7 @@ import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.time.LocalDateTime;
 import java.util.HashMap;
 import java.util.Map;
 
@@ -40,7 +42,12 @@ public class AuthService {
     private final UserEventProducer userEventProducer;
 
     @Transactional
-    public String registerUser(RegistrationRequest request, String ipAddress, String userAgent) throws Exception {
+    public ApiResponse<Void> registerUser(
+            RegistrationRequest request,
+            String ipAddress,
+            String userAgent
+    ) throws Exception {
+
         Map<String, String> businessErrors = new HashMap<>();
 
         // --- 1. VALIDATION & PROBING AUDIT ---
@@ -76,10 +83,13 @@ public class AuthService {
         User user = userMapper.toEntity(request);
         CustomerProfile profile = userMapper.toProfile(request);
 
-        user.setPassword(passwordEncoder.encode(request.getPassword()));
-        user.setRole(UserRole.CUSTOMER);
-        user.setIsActive(true);
+        UserRole role = (request.getRole() != null)
+                ? UserRole.valueOf(request.getRole().toUpperCase())
+                : UserRole.CUSTOMER;
 
+        user.setPassword(passwordEncoder.encode(request.getPassword()));
+        user.setRole(role);
+        user.setIsActive(true);
         user.setProfile(profile);
         profile.setUser(user);
 
@@ -94,7 +104,7 @@ public class AuthService {
                 "REGISTER_SUCCESS",
                 ipAddress,
                 userAgent,
-                "New account created for: " + profile.getFullName()
+                "New account created"
         );
 
         // --- 5. KAFKA PRODUCER
@@ -103,15 +113,25 @@ public class AuthService {
                 profile.getFullName(),
                 savedUser.getPhoneNumber(),
                 profile.getCareOf(),
+                savedUser.getRole().name(),
                 savedUser.getIsActive()
         );
         userEventProducer.sendUserUpdate(event);
 
-        return "Registration successful for " + profile.getFullName();
+        return ApiResponse.<Void>builder()
+                .success(true)
+                .status(HttpStatus.CREATED.value())
+                .message("Registration successful for " + profile.getFullName())
+                .timestamp(LocalDateTime.now())
+                .build();
     }
 
-    public String login(LoginRequest loginRequest, String ipAddress, String userAgent, HttpServletResponse response)
-            throws Exception {
+    public ApiResponse<Map<String, String>> login(
+            LoginRequest loginRequest,
+            String ipAddress,
+            String userAgent,
+            HttpServletResponse response
+    ) throws Exception {
 
         String identifier = loginRequest.getIdentifier();
         boolean isEmailInput = identifier.contains("@");
@@ -122,7 +142,8 @@ public class AuthService {
                     .orElseThrow(() -> new DomainException(
                             HttpStatus.UNAUTHORIZED,
                             "Authentication Failed",
-                            "login", "Invalid phone number / email"
+                            "login",
+                            "Invalid credentials"
                     ));
 
             // 2. Validate Password
@@ -134,10 +155,13 @@ public class AuthService {
                 );
             }
 
-            // Check for Concurrent Session
             if (!redis.getSessionDetails(user).isEmpty()) {
-                throw new DomainException(HttpStatus.CONFLICT, "Active Session Found",
-                        "login", "You are already logged in on another device. Please logout first.");
+                throw new DomainException(
+                        HttpStatus.CONFLICT,
+                        "Active Session Found",
+                        "login",
+                        "Already logged in elsewhere"
+                );
             }
 
             // 3. Generate JWT
@@ -160,7 +184,13 @@ public class AuthService {
                     "Authentication successful"
             );
 
-            return "Login successful for " + user.getPhoneNumber();
+            return ApiResponse.<Map<String, String>>builder()
+                    .success(true)
+                    .status(HttpStatus.OK.value())
+                    .message("Login successful")
+                    .data(Map.of("role", user.getRole().name()))
+                    .timestamp(LocalDateTime.now())
+                    .build();
 
         } catch (Exception e) {
             // --- AUDIT FAILURE ---
@@ -179,7 +209,8 @@ public class AuthService {
         }
     }
 
-    public void logout(HttpServletRequest request, HttpServletResponse response) throws Exception {
+    public ApiResponse<Void> logout(HttpServletRequest request, HttpServletResponse response) throws Exception {
+
         // 1. Extract Token from Cookie (Using your CookieUtils for cleaner code)
         String token = cookie.extractToken(request);
 
@@ -192,7 +223,7 @@ public class AuthService {
                 auditService.record(
                         session.getUserId(),
                         session.getPhoneNumber(),
-                        null, // Email usually isn't in Redis session, but phone/ID is enough
+                        null,
                         "LOGOUT",
                         request.getRemoteAddr(),
                         request.getHeader("User-Agent"),
@@ -206,19 +237,34 @@ public class AuthService {
 
         // 5. Overwrite Cookie with "Expired" status
         cookie.delHttpOnlyCookie(response);
-
-        // 6. Clear Spring Security Context
         SecurityContextHolder.clearContext();
+
+        return ApiResponse.<Void>builder()
+                .success(true)
+                .status(HttpStatus.OK.value())
+                .message("Logged out successfully")
+                .timestamp(LocalDateTime.now())
+                .build();
     }
 
     public UserContext validateSession(String token) {
         if (token == null || token.isEmpty()) {
-            throw new DomainException(HttpStatus.UNAUTHORIZED, "Security Alert", "token", "Session token not found");
+            throw new DomainException(
+                    HttpStatus.UNAUTHORIZED,
+                    "Security Alert",
+                    "token",
+                    "No session found"
+            );
         }
 
         // 1. Validate JWT Signature & Expiration
         if (!jwt.validateToken(token)) {
-            throw new DomainException(HttpStatus.UNAUTHORIZED, "Session Expired", "token", "Session has timed out");
+            throw new DomainException(
+                    HttpStatus.UNAUTHORIZED,
+                    "Session Expired",
+                    "token",
+                    "Please login again"
+            );
         }
 
         // 2. Validate Redis Session (Crucial for Logout/Single-Session logic)
@@ -226,8 +272,8 @@ public class AuthService {
                 .orElseThrow(() -> new DomainException(
                         HttpStatus.UNAUTHORIZED,
                         "Invalid Session",
-                        "token", "Session has been terminated")
-                );
+                        "token",
+                        "Session terminated"));
 
         // 3. Return the Identity context (Traceability)
         return UserContext.builder()

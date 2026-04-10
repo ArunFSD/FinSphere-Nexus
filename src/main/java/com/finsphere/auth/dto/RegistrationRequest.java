@@ -86,4 +86,12 @@ public class RegistrationRequest {
             groups = ThirdOrder.class
     )
     private String careOf;
+
+    @NotBlank(message = "Role is mandatory", groups = FirstOrder.class)
+    @Pattern(
+            regexp = "^(CUSTOMER|ADMIN)$",
+            message = "Role must be either CUSTOMER or ADMIN",
+            groups = SecondOrder.class
+    )
+    private String role;
 }

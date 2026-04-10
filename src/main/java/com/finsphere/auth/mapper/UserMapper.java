@@ -13,8 +13,8 @@ import org.mapstruct.factory.Mappers;
 public interface UserMapper {
 
     @BeanMapping(ignoreByDefault = true)
-    @Mapping(target = "phoneNumber", source = "phoneNumber") // Added
-    @Mapping(target = "email", source = "email")             // Added
+    @Mapping(target = "phoneNumber", source = "phoneNumber")
+    @Mapping(target = "email", source = "email")
     @Mapping(target = "profile", source = "request")
     User toEntity(RegistrationRequest request);
 
