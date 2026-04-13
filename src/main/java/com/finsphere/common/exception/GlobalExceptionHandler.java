@@ -15,60 +15,40 @@ import java.util.Map;
 @RestControllerAdvice
 public class GlobalExceptionHandler {
 
-    // 1. Handle Validation Errors (e.g., @NotBlank, @Pattern)
+    @ExceptionHandler(DomainException.class)
+    public ResponseEntity<ApiResponse<Object>> handleDomainException(DomainException ex) {
+        return buildErrorResponse(ex.getStatus(), ex.getTopLevelMessage(), ex.getErrors());
+    }
+
     @ExceptionHandler(MethodArgumentNotValidException.class)
-    public ResponseEntity<ApiResponse<Object>> handleValidationExceptions(MethodArgumentNotValidException ex) {
+    public ResponseEntity<ApiResponse<Object>> handleValidation(MethodArgumentNotValidException ex) {
         Map<String, String> errors = new HashMap<>();
         ex.getBindingResult().getAllErrors().forEach((error) -> {
             String fieldName = ((FieldError) error).getField();
             String errorMessage = error.getDefaultMessage();
             errors.put(fieldName, errorMessage);
         });
-
-        return buildResponse(HttpStatus.BAD_REQUEST, "Validation Failed", errors);
+        return buildErrorResponse(HttpStatus.BAD_REQUEST, "Validation Failed", errors);
     }
 
-    // 2. Handle Business Logic Errors
-    @ExceptionHandler(RuntimeException.class)
-    public ResponseEntity<ApiResponse<Object>> handleRuntimeException(RuntimeException ex) {
-        Map<String, String> errors = new HashMap<>();
-        errors.put("error", ex.getMessage());
-
-        return buildResponse(HttpStatus.BAD_REQUEST, "Operation Failed", errors);
-    }
-
-    // 3. Handle Specific FinSphere Business & Security Errors
-    @ExceptionHandler(DomainException.class)
-    public ResponseEntity<ApiResponse<Object>> handleDomainException(DomainException ex) {
-        return buildResponse(ex.getStatus(), ex.getTopLevelMessage(), ex.getErrors());
-    }
-
-    // 4. Handle Generic Internal Errors
     @ExceptionHandler(Exception.class)
-    public ResponseEntity<ApiResponse<Object>> handleGlobalException(Exception ex) {
-        return buildResponse(
+    public ResponseEntity<ApiResponse<Object>> handleGeneral(Exception ex) {
+        // Log the actual stack trace here for Loki/Grafana
+        return buildErrorResponse(
                 HttpStatus.INTERNAL_SERVER_ERROR,
-                "An unexpected error occurred",
-                Map.of("details", ex.getMessage())
+                "An unexpected system error occurred",
+                Map.of("details", ex.getMessage() != null ? ex.getMessage() : "No message available")
         );
     }
 
-    /**
-     * Unified Helper method to build the final ResponseEntity using ApiResponse.
-     */
-    private ResponseEntity<ApiResponse<Object>> buildResponse(
-            HttpStatus status,
-            String message,
-            Object errors
-    ) {
+    private ResponseEntity<ApiResponse<Object>> buildErrorResponse(HttpStatus status, String message, Object errors) {
         ApiResponse<Object> response = ApiResponse.<Object>builder()
-                .success(false) // Hardcoded to false for the Exception Handler
+                .success(false)
                 .status(status.value())
                 .message(message)
                 .errors(errors)
                 .timestamp(LocalDateTime.now())
                 .build();
-
         return new ResponseEntity<>(response, status);
     }
 }
