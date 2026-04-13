@@ -1,6 +1,6 @@
 package com.finsphere.auth.dto;
 
-import com.finsphere.auth.validation.ValidationGroups.*;
+import com.finsphere.common.validation.ValidationGroups.*;
 import jakarta.validation.constraints.Email;
 import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.Pattern;
