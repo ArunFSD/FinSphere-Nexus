@@ -18,6 +18,7 @@ import com.finsphere.common.exception.DomainException;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.HttpStatus;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.security.crypto.password.PasswordEncoder;
@@ -30,6 +31,7 @@ import java.util.Map;
 
 @Service
 @RequiredArgsConstructor
+@Slf4j
 public class AuthService {
 
     private final UserRepository userRepository;
@@ -48,6 +50,9 @@ public class AuthService {
             String userAgent
     ) throws Exception {
 
+        log.info(">>>> [AUTH_REG_START] Registration attempt for Phone: {} | Email: {}",
+                request.getPhoneNumber(), request.getEmail());
+
         Map<String, String> businessErrors = new HashMap<>();
 
         // 1. Business Validation
@@ -61,6 +66,10 @@ public class AuthService {
         }
 
         if (!businessErrors.isEmpty()) {
+
+            log.warn("!!!! [AUTH_REG_VALIDATION_FAIL] Validation failed for: {} | Errors: {}",
+                    request.getPhoneNumber(), businessErrors.keySet());
+
             auditService.record(
                     null,
                     request.getPhoneNumber(),
@@ -69,6 +78,7 @@ public class AuthService {
                     ipAddress, userAgent,
                     "Validation failed: " + businessErrors.values()
             );
+
             throw new DomainException(HttpStatus.BAD_REQUEST, "Validation Failed", businessErrors);
         }
 
@@ -79,7 +89,6 @@ public class AuthService {
 
         User user = userMapper.toEntity(request);
         CustomerProfile profile = userMapper.toProfile(request);
-
         UserRole role = (request.getRole() != null)
                 ? UserRole.valueOf(request.getRole().toUpperCase())
                 : UserRole.CUSTOMER;
@@ -92,6 +101,7 @@ public class AuthService {
 
         // 3. Persistence
         User savedUser = userRepository.save(user);
+        log.info("<<<< [AUTH_REG_DB_SUCCESS] User persisted with ID: {}", savedUser.getId());
 
         // 4. Audit Success
         auditService.record(
@@ -104,6 +114,8 @@ public class AuthService {
         );
 
         // 5. Kafka Event
+        log.info(">>>> [AUTH_KAFKA_DISPATCH] Sending UserUpdateEvent for ID: {}", savedUser.getId());
+
         UserUpdateEvent event = new UserUpdateEvent(
                 savedUser.getId(),
                 profile.getFullName(),
@@ -129,6 +141,8 @@ public class AuthService {
             HttpServletResponse response
     ) throws Exception {
 
+        log.info(">>>> [AUTH_LOGIN_START] Login attempt for Identifier: {}", loginRequest.getIdentifier());
+
         String identifier = loginRequest.getIdentifier();
         boolean isEmailInput = identifier.contains("@");
 
@@ -138,10 +152,11 @@ public class AuthService {
                             HttpStatus.UNAUTHORIZED,
                             "Authentication Failed",
                             "login",
-                            "Invalid credentials"
-                    ));
+                            "Invalid credentials")
+                    );
 
             if (!passwordEncoder.matches(loginRequest.getPassword(), user.getPassword())) {
+                log.warn("!!!! [AUTH_LOGIN_FAIL] Incorrect password for: {}", identifier);
                 throw new DomainException(
                         HttpStatus.UNAUTHORIZED,
                         "Authentication Failed",
@@ -151,6 +166,7 @@ public class AuthService {
             }
 
             if (!redis.getSessionDetails(user).isEmpty()) {
+                log.warn("!!!! [AUTH_LOGIN_CONFLICT] Active session exists for: {}", identifier);
                 throw new DomainException(
                         HttpStatus.CONFLICT,
                         "Active Session Found",
@@ -163,6 +179,7 @@ public class AuthService {
             redis.saveSessionToRedis(token, user, ipAddress, userAgent);
             cookie.setHttpOnlyCookie(response, token);
 
+            log.info("<<<< [AUTH_LOGIN_SUCCESS] User logged in: {} | Role: {}", user.getPhoneNumber(), user.getRole());
             auditService.record(
                     user.getId(),
                     user.getPhoneNumber(),
@@ -181,6 +198,7 @@ public class AuthService {
                     .build();
 
         } catch (Exception e) {
+            log.error("!!!! [AUTH_LOGIN_ERROR] Login failure: {}", e.getMessage());
             auditService.record(
                     null,
                     isEmailInput ? null : identifier,
@@ -199,9 +217,13 @@ public class AuthService {
     ) throws Exception {
 
         String token = cookie.extractToken(request);
+        log.info(">>>> [AUTH_LOGOUT_START] Processing logout");
 
         if (token != null && !token.isBlank()) {
             redis.getSessionDetails(token).ifPresent(session -> {
+
+                log.info("<<<< [AUTH_LOGOUT_REDIS] Clearing session for UserID: {}", session.getUserId());
+
                 auditService.record(
                         session.getUserId(),
                         session.getPhoneNumber(),
@@ -211,6 +233,7 @@ public class AuthService {
                         request.getHeader("User-Agent"),
                         "User logged out successfully"
                 );
+
                 redis.delSessionToRedis(token);
             });
         }
@@ -227,21 +250,25 @@ public class AuthService {
     }
 
     public UserContext validateSession(String token) {
-
+        log.debug(">>>> [AUTH_VALIDATE_START] Validating session token");
         if (token == null || token.isEmpty()) {
             throw new DomainException(HttpStatus.UNAUTHORIZED, "Security Alert", "token", "No session found");
         }
         if (!jwt.validateToken(token)) {
+            log.warn("!!!! [AUTH_VALIDATE_FAIL] JWT validation failed or expired");
             throw new DomainException(HttpStatus.UNAUTHORIZED, "Session Expired", "token", "Please login again");
         }
 
         UserSession session = redis.getSessionDetails(token)
-                .orElseThrow(() -> new DomainException(
-                        HttpStatus.UNAUTHORIZED,
-                        "Invalid Session",
-                        "token",
-                        "Session terminated"
-                ));
+                .orElseThrow(() -> {
+                    log.warn("!!!! [AUTH_VALIDATE_FAIL] Redis session missing for valid JWT");
+                    return new DomainException(
+                            HttpStatus.UNAUTHORIZED,
+                            "Invalid Session",
+                            "token",
+                            "Session terminated"
+                    );
+                });
 
         return UserContext.builder()
                 .userId(session.getUserId())
