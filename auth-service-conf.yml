@@ -27,7 +27,7 @@ spring:
       port: 7379
 
   kafka:
-    bootstrap-servers: 127.0.0.1:7092
+    bootstrap-servers: localhost:7092
     producer:
       key-serializer: org.apache.kafka.common.serialization.StringSerializer
       value-serializer: org.springframework.kafka.support.serializer.JsonSerializer
