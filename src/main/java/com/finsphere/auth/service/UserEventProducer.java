@@ -15,7 +15,6 @@ public class UserEventProducer {
     private final KafkaTemplate<String, UserUpdateEvent> kafkaTemplate;
 
     public void sendUserUpdate(UserUpdateEvent event) {
-        log.info("Sending user update event to Kafka for ID: {}", event.getUserId());
         kafkaTemplate.send(TOPIC, String.valueOf(event.getUserId()), event);
     }
 

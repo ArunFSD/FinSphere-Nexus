@@ -10,7 +10,6 @@ import com.finsphere.common.dto.ApiResponse;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 import lombok.RequiredArgsConstructor;
-import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.*;
@@ -34,7 +33,8 @@ public class AuthController {
         String ip = request.getRemoteAddr();
         String ua = request.getHeader("User-Agent");
 
-        return new ResponseEntity<>(authService.registerUser(regRequest, ip, ua), HttpStatus.CREATED);
+        ApiResponse<Void> response = authService.registerUser(regRequest, ip, ua);
+        return ResponseEntity.status(response.getStatus()).body(response);
     }
 
     @PostMapping("/login")
@@ -46,7 +46,8 @@ public class AuthController {
         String ip = request.getRemoteAddr();
         String ua = request.getHeader("User-Agent");
 
-        return ResponseEntity.ok(authService.login(loginRequest, ip, ua, response));
+        ApiResponse<Map<String, String>> apiResponse = authService.login(loginRequest, ip, ua, response);
+        return ResponseEntity.status(apiResponse.getStatus()).body(apiResponse);
     }
 
     @PostMapping("/logout")
@@ -54,23 +55,22 @@ public class AuthController {
             HttpServletRequest request,
             HttpServletResponse response) throws Exception {
 
-        return ResponseEntity.ok(authService.logout(request, response));
+        ApiResponse<Void> apiResponse = authService.logout(request, response);
+        return ResponseEntity.status(apiResponse.getStatus()).body(apiResponse);
     }
 
     @GetMapping("/validate")
     public ResponseEntity<ApiResponse<UserContext>> validateToken(HttpServletRequest request) {
-
-        // 1. Extract token from Cookie
         String token = cookie.extractToken(request);
-
-        // 2. Business Logic: Check JWT and Redis (handled in service)
         UserContext identity = authService.validateSession(token);
 
-        return ResponseEntity.ok(ApiResponse.<UserContext>builder()
+        ApiResponse<UserContext> response = ApiResponse.<UserContext>builder()
                 .success(true)
-                .status(HttpStatus.OK.value())
+                .status(200)
                 .message("Session is valid")
                 .data(identity)
-                .build());
+                .build();
+
+        return ResponseEntity.ok(response);
     }
 }

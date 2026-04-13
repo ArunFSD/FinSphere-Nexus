@@ -50,7 +50,7 @@ public class AuthService {
 
         Map<String, String> businessErrors = new HashMap<>();
 
-        // --- 1. VALIDATION & PROBING AUDIT ---
+        // 1. Business Validation
         if (userRepository.existsByPhoneNumber(request.getPhoneNumber())) {
             businessErrors.put("phoneNumber", "Phone number is already registered");
         }
@@ -61,21 +61,18 @@ public class AuthService {
         }
 
         if (!businessErrors.isEmpty()) {
-            // Record the failure: Someone is trying to register with existing data
             auditService.record(
                     null,
                     request.getPhoneNumber(),
                     request.getEmail(),
                     "REGISTER_FAILURE",
-                    ipAddress,
-                    userAgent,
+                    ipAddress, userAgent,
                     "Validation failed: " + businessErrors.values()
             );
-
             throw new DomainException(HttpStatus.BAD_REQUEST, "Validation Failed", businessErrors);
         }
 
-        // --- 2. NORMALIZATION & MAPPING ---
+        // 2. Normalization & Mapping
         String rawPhone = request.getPhoneNumber().replaceAll("[^0-9]", "");
         String normalizedPhone = rawPhone.substring(Math.max(0, rawPhone.length() - 10));
         request.setPhoneNumber(normalizedPhone);
@@ -93,21 +90,20 @@ public class AuthService {
         user.setProfile(profile);
         profile.setUser(user);
 
-        // --- 3. PERSISTENCE ---
+        // 3. Persistence
         User savedUser = userRepository.save(user);
 
-        // --- 4. SUCCESS AUDIT ---
+        // 4. Audit Success
         auditService.record(
                 savedUser.getId(),
                 savedUser.getPhoneNumber(),
                 savedUser.getEmail(),
                 "REGISTER_SUCCESS",
-                ipAddress,
-                userAgent,
+                ipAddress, userAgent,
                 "New account created"
         );
 
-        // --- 5. KAFKA PRODUCER
+        // 5. Kafka Event
         UserUpdateEvent event = new UserUpdateEvent(
                 savedUser.getId(),
                 profile.getFullName(),
@@ -137,7 +133,6 @@ public class AuthService {
         boolean isEmailInput = identifier.contains("@");
 
         try {
-            // 1. Find user by Phone or Email
             User user = userRepository.findByIdentifier(identifier)
                     .orElseThrow(() -> new DomainException(
                             HttpStatus.UNAUTHORIZED,
@@ -146,12 +141,12 @@ public class AuthService {
                             "Invalid credentials"
                     ));
 
-            // 2. Validate Password
             if (!passwordEncoder.matches(loginRequest.getPassword(), user.getPassword())) {
                 throw new DomainException(
                         HttpStatus.UNAUTHORIZED,
                         "Authentication Failed",
-                        "login", "Your password is incorrect"
+                        "login",
+                        "Your password is incorrect"
                 );
             }
 
@@ -164,23 +159,16 @@ public class AuthService {
                 );
             }
 
-            // 3. Generate JWT
             String token = jwt.generateToken(user.getPhoneNumber(), user.getRole().name());
-
-            // 4. Store Session in Redis
             redis.saveSessionToRedis(token, user, ipAddress, userAgent);
-
-            // 5. Create HttpOnly Cookie
             cookie.setHttpOnlyCookie(response, token);
 
-            // --- AUDIT SUCCESS ---
             auditService.record(
                     user.getId(),
                     user.getPhoneNumber(),
                     user.getEmail(),
                     "LOGIN_SUCCESS",
-                    ipAddress,
-                    userAgent,
+                    ipAddress, userAgent,
                     "Authentication successful"
             );
 
@@ -193,33 +181,27 @@ public class AuthService {
                     .build();
 
         } catch (Exception e) {
-            // --- AUDIT FAILURE ---
-            // We record the failure even if the user doesn't exist (userId will be null)
             auditService.record(
                     null,
                     isEmailInput ? null : identifier,
                     isEmailInput ? identifier : null,
                     "LOGIN_FAILURE",
-                    ipAddress,
-                    userAgent,
-                    e.getMessage() // Records why it failed (Invalid user, Wrong pass, etc.)
+                    ipAddress, userAgent,
+                    e.getMessage()
             );
-            // Re-throw the exception so the GlobalExceptionHandler takes over
             throw e;
         }
     }
 
-    public ApiResponse<Void> logout(HttpServletRequest request, HttpServletResponse response) throws Exception {
+    public ApiResponse<Void> logout(
+            HttpServletRequest request,
+            HttpServletResponse response
+    ) throws Exception {
 
-        // 1. Extract Token from Cookie (Using your CookieUtils for cleaner code)
         String token = cookie.extractToken(request);
 
         if (token != null && !token.isBlank()) {
-            // 2. FETCH context from Redis BEFORE deleting
-            // We need the session data (userId, phone) to record WHO is logging out
             redis.getSessionDetails(token).ifPresent(session -> {
-
-                // 3. Record the Logout in PostgreSQL Audit
                 auditService.record(
                         session.getUserId(),
                         session.getPhoneNumber(),
@@ -229,13 +211,10 @@ public class AuthService {
                         request.getHeader("User-Agent"),
                         "User logged out successfully"
                 );
-
-                // 4. Remove from Redis (Port 7379)
                 redis.delSessionToRedis(token);
             });
         }
 
-        // 5. Overwrite Cookie with "Expired" status
         cookie.delHttpOnlyCookie(response);
         SecurityContextHolder.clearContext();
 
@@ -248,34 +227,22 @@ public class AuthService {
     }
 
     public UserContext validateSession(String token) {
+
         if (token == null || token.isEmpty()) {
-            throw new DomainException(
-                    HttpStatus.UNAUTHORIZED,
-                    "Security Alert",
-                    "token",
-                    "No session found"
-            );
+            throw new DomainException(HttpStatus.UNAUTHORIZED, "Security Alert", "token", "No session found");
         }
-
-        // 1. Validate JWT Signature & Expiration
         if (!jwt.validateToken(token)) {
-            throw new DomainException(
-                    HttpStatus.UNAUTHORIZED,
-                    "Session Expired",
-                    "token",
-                    "Please login again"
-            );
+            throw new DomainException(HttpStatus.UNAUTHORIZED, "Session Expired", "token", "Please login again");
         }
 
-        // 2. Validate Redis Session (Crucial for Logout/Single-Session logic)
         UserSession session = redis.getSessionDetails(token)
                 .orElseThrow(() -> new DomainException(
                         HttpStatus.UNAUTHORIZED,
                         "Invalid Session",
                         "token",
-                        "Session terminated"));
+                        "Session terminated"
+                ));
 
-        // 3. Return the Identity context (Traceability)
         return UserContext.builder()
                 .userId(session.getUserId())
                 .phoneNumber(session.getPhoneNumber())
