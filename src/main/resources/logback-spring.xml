@@ -11,6 +11,8 @@
     <appender name="LOKI" class="com.github.loki4j.logback.Loki4jAppender">
         <http>
             <url>http://localhost:3100/loki/api/v1/push</url>
+            <connectionTimeoutMs>10000</connectionTimeoutMs>
+            <requestTimeoutMs>10000</requestTimeoutMs>
         </http>
         <format>
             <label>
@@ -21,12 +23,15 @@
             </message>
             <sortByTimestamp>true</sortByTimestamp>
         </format>
+        <batchMaxItems>1000</batchMaxItems>
+        <batchMaxBytes>65536</batchMaxBytes>
+        <sendQueueMaxBytes>10485760</sendQueueMaxBytes>
     </appender>
 
     <root level="INFO">
-        <appender-ref ref="CONSOLE" />
-        <appender-ref ref="LOKI" />
+        <appender-ref ref="CONSOLE"/>
+        <appender-ref ref="LOKI"/>
     </root>
 
-    <logger name="com.finsphere" level="DEBUG" />
+    <logger name="com.finsphere" level="DEBUG"/>
 </configuration>
