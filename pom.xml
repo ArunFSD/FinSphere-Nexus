@@ -11,9 +11,9 @@
     </parent>
 
     <groupId>com.finsphere</groupId>
-    <artifactId>chit-schemes-management-service</artifactId>
+    <artifactId>chit-finance-service</artifactId>
     <version>0.0.1-SNAPSHOT</version>
-    <name>chit-schemes-management-service</name>
+    <name>chit-finance-service</name>
     <description>Core Business Logic for Chit Fund Schemes</description>
 
     <properties>

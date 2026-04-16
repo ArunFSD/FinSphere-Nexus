@@ -1,12 +1,12 @@
 spring:
   application:
-    name: chit-schemes-management-service
+    name: chit-finance-service
   main:
     allow-bean-definition-overriding: true
   cloud:
     config:
       uri: http://localhost:7888
-      name: chit-schemes-management-service
+      name: chit-finance-service
       fail-fast: true
   profiles:
     active: conf
