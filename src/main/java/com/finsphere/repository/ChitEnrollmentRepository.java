@@ -9,4 +9,7 @@ public interface ChitEnrollmentRepository extends JpaRepository<ChitEnrollment, 
 
     boolean existsByPlanIdAndSlotNumber(Long planId, Integer slotNumber);
 
+    // Count how many slots this user holds in this specific plan
+    long countByPlanIdAndUserId(Long planId, Long userId);
+
 }

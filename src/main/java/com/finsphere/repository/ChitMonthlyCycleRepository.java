@@ -11,4 +11,7 @@ public interface ChitMonthlyCycleRepository extends JpaRepository<ChitMonthlyCyc
 
     Optional<ChitMonthlyCycle> findByPlanIdAndMonthlyCount(Long planId, Integer monthlyCount);
 
+    // Count how many auctions this user has already won in this plan
+    long countByPlanIdAndWinnerUserId(Long planId, Long winnerUserId);
+
 }
