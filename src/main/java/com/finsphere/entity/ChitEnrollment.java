@@ -23,7 +23,7 @@ public class ChitEnrollment {
     private ChitPlan plan;
 
     @Column(name = "user_id", nullable = false)
-    private Long userId; // Logic link to Auth Service
+    private Long userId;
 
     @Column(name = "slot_number", nullable = false)
     private Integer slotNumber;

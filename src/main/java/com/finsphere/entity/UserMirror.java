@@ -20,5 +20,6 @@ public class UserMirror {
     private String fullName;
     private String phoneNumber;
     private String careOf;
+    private String role;
     private Boolean isActive;
 }

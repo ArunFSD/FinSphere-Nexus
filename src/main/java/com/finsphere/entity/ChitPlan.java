@@ -3,6 +3,7 @@ package com.finsphere.entity;
 import jakarta.persistence.*;
 import lombok.*;
 import java.math.BigDecimal;
+import java.math.RoundingMode;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.util.List;
@@ -10,7 +11,7 @@ import java.util.List;
 @Entity
 @Getter
 @Setter
-@Table(name = "chit_plans")
+@Table(name = "chit_plans", schema = "fsn_chit_management")
 @NoArgsConstructor
 @AllArgsConstructor
 @Builder
@@ -30,7 +31,7 @@ public class ChitPlan {
     private Integer durationMonths;
 
     @Column(name = "commission_percentage", nullable = false)
-    private Integer commissionPercentage;
+    private BigDecimal commissionPercentage; // Changed to BigDecimal for 3.5% etc.
 
     @Column(name = "commission_amount")
     private BigDecimal commissionAmount;
@@ -41,8 +42,8 @@ public class ChitPlan {
     @Column(name = "max_bid_limit", nullable = false)
     private BigDecimal maxBidLimit;
 
-    @Column(name = "min_members", nullable = false)
-    private Integer minMembers;
+    @Column(name = "total_members", nullable = false)
+    private Integer totalMembers;
 
     @Column(name = "start_date", nullable = false)
     private LocalDate startDate;
@@ -53,33 +54,37 @@ public class ChitPlan {
     @Column(name = "is_active")
     private Boolean isActive = true;
 
+    @Column(name = "created_by")
+    private Long createdBy; // Links to mirrored user_id
+
     @Column(name = "created_at", updatable = false)
-    private LocalDateTime createdAt = LocalDateTime.now();
+    private LocalDateTime createdAt;
 
     @Column(name = "updated_at")
-    private LocalDateTime updatedAt = LocalDateTime.now();
-
-    // --- ADDED MAPPINGS START ---
-
-    @OneToMany(mappedBy = "plan", cascade = CascadeType.ALL, fetch = FetchType.LAZY)
-    private List<ChitMonthlyCycle> monthlyCycles;
-
-    @OneToMany(mappedBy = "plan", cascade = CascadeType.ALL, fetch = FetchType.LAZY)
-    private List<ChitEnrollment> enrollments;
-
-    // --- ADDED MAPPINGS END ---
+    private LocalDateTime updatedAt;
 
     @PrePersist
+    public void onCreate() {
+        this.createdAt = LocalDateTime.now();
+        this.updatedAt = LocalDateTime.now();
+        calculateFinancials();
+    }
+
     @PreUpdate
-    public void prePersist() {
+    public void onUpdate() {
+        this.updatedAt = LocalDateTime.now();
+        calculateFinancials();
+    }
+
+    private void calculateFinancials() {
         if (this.totalValue != null && this.commissionPercentage != null) {
+            // Formula: (Total Value * Commission %) / 100
             this.commissionAmount = this.totalValue
-                    .multiply(BigDecimal.valueOf(this.commissionPercentage))
-                    .divide(BigDecimal.valueOf(100));
+                    .multiply(this.commissionPercentage)
+                    .divide(BigDecimal.valueOf(100), 2, RoundingMode.HALF_UP);
         }
         if (this.startDate != null && this.durationMonths != null) {
             this.endDate = this.startDate.plusMonths(this.durationMonths);
         }
-        this.updatedAt = LocalDateTime.now();
     }
 }

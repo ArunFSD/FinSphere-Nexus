@@ -1,49 +1,63 @@
 package com.finsphere.service;
 
-import com.finsphere.dto.EnrollmentRequest;
+import com.finsphere.common.dto.ApiResponse;
+import com.finsphere.common.exception.DomainException;
 import com.finsphere.entity.ChitEnrollment;
 import com.finsphere.entity.ChitPlan;
 import com.finsphere.repository.ChitEnrollmentRepository;
 import com.finsphere.repository.ChitPlanRepository;
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
+import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.time.LocalDateTime;
+
 @Service
 @RequiredArgsConstructor
+@Slf4j
 public class ChitEnrollmentService {
 
     private final ChitEnrollmentRepository enrollmentRepository;
     private final ChitPlanRepository planRepository;
 
     @Transactional
-    public ChitEnrollment enrollUser(EnrollmentRequest request) {
-        // 1. Validate Plan exists
-        ChitPlan plan = planRepository.findById(request.getPlanId())
-                .orElseThrow(() -> new RuntimeException("Plan not found with ID: " + request.getPlanId()));
+    public ApiResponse<Void> enrollUser(Long planId, Long userId, Integer slotNumber) {
+        log.info(">>>> [CHIT_ENROLL_START] PlanID: {} | UserID: {} | Slot: {}", planId, userId, slotNumber);
 
-        // 2. Validate Slot Number isn't higher than Plan duration
-        if (request.getSlotNumber() > plan.getDurationMonths()) {
-            throw new RuntimeException("Invalid slot number for this plan");
+        // 1. Verify Plan Exists
+        ChitPlan plan = planRepository.findById(planId)
+                .orElseThrow(() -> new DomainException(
+                        HttpStatus.NOT_FOUND,
+                        "Plan not found",
+                        "enrollment",
+                        "Plan ID invalid")
+                );
+
+        // 2. Check if Slot is already taken
+        if (enrollmentRepository.existsByPlanIdAndSlotNumber(planId, slotNumber)) {
+            log.warn("!!!! [CHIT_ENROLL_FAIL] Slot {} already occupied in Plan {}", slotNumber, planId);
+            throw new DomainException(HttpStatus.CONFLICT, "Slot Occupied", "slot", "This slot is already taken");
         }
 
-        // 3. Check if slot is already taken (Database UNIQUE constraint handles this too,
-        // but it's better to check here for a clean error message)
-        boolean isSlotTaken = enrollmentRepository.existsByPlanIdAndSlotNumber(
-                request.getPlanId(), request.getSlotNumber());
-
-        if (isSlotTaken) {
-            throw new RuntimeException("Slot " + request.getSlotNumber() + " is already occupied.");
-        }
-
-        // 4. Create Enrollment
+        // 3. Save Enrollment
         ChitEnrollment enrollment = ChitEnrollment.builder()
                 .plan(plan)
-                .userId(request.getUserId())
-                .slotNumber(request.getSlotNumber())
+                .userId(userId)
+                .slotNumber(slotNumber)
                 .isActive(true)
+                .joinedDate(LocalDateTime.now())
                 .build();
 
-        return enrollmentRepository.save(enrollment);
+        enrollmentRepository.save(enrollment);
+        log.info("<<<< [CHIT_ENROLL_SUCCESS] User {} enrolled in Plan {} at Slot {}", userId, planId, slotNumber);
+
+        return ApiResponse.<Void>builder()
+                .success(true)
+                .status(HttpStatus.CREATED.value())
+                .message("Successfully enrolled in " + plan.getName())
+                .timestamp(LocalDateTime.now())
+                .build();
     }
 }

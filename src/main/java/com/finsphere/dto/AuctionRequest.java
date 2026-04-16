@@ -5,7 +5,7 @@ import lombok.Data;
 import java.math.BigDecimal;
 
 @Data
-public class AuctionUpdateRequest {
+public class AuctionRequest {
     private Long planId;
     private Integer monthlyCount;
     private BigDecimal bidAmount;

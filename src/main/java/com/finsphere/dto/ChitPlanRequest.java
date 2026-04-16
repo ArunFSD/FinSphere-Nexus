@@ -10,9 +10,9 @@ public class ChitPlanRequest {
     private String name;
     private BigDecimal totalValue;
     private Integer durationMonths;
-    private Integer commissionPercentage;
+    private BigDecimal commissionPercentage;
     private BigDecimal monthlyInstallment;
     private BigDecimal maxBidLimit;
-    private Integer minMembers;
+    private Integer totalMembers;
     private LocalDate startDate;
 }

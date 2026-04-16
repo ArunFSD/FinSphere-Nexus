@@ -12,22 +12,27 @@ import org.springframework.stereotype.Service;
 @Slf4j
 @RequiredArgsConstructor
 public class UserEventConsumer {
-
-    private final UserMirrorRepository userMirrorRepository;
+    private final UserMirrorRepository repository;
 
     @KafkaListener(topics = "user-updates-topic", groupId = "chit-service-group")
-    public void consumer(UserUpdateEvent event) {
-        log.info("Received user update event for ID: {}", event.getUserId());
+    public void handleUserUpdate(UserUpdateEvent event) {
+        log.info(">>>> [KAFKA_SYNC_START] Syncing UserID: {} | Role: {}", event.getUserId(), event.getRole());
 
-        UserMirror mirror = UserMirror.builder()
-                .userId(event.getUserId())
-                .fullName(event.getFullName())
-                .phoneNumber(event.getPhoneNumber())
-                .careOf(event.getCareOf())
-                .isActive(event.getIsActive())
-                .build();
+        try {
+            UserMirror mirror = UserMirror.builder()
+                    .userId(event.getUserId())
+                    .fullName(event.getFullName())
+                    .phoneNumber(event.getPhoneNumber())
+                    .careOf(event.getCareOf())
+                    .role(event.getRole())
+                    .isActive(event.getIsActive())
+                    .build();
 
-        userMirrorRepository.save(mirror);
-        log.info("User Mirror updated successfully for: {}", event.getFullName());
+            repository.save(mirror);
+            log.info("<<<< [KAFKA_SYNC_SUCCESS] User {} mirrored in Chit Database", event.getUserId());
+        } catch (Exception e) {
+            log.error("!!!! [KAFKA_SYNC_ERROR] Failed to mirror UserID: {} | Reason: {}",
+                    event.getUserId(), e.getMessage());
+        }
     }
 }
