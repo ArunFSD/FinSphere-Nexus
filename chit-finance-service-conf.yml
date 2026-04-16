@@ -1,14 +1,12 @@
 server:
   port: 7002
-  servlet:
-    context-path: /chits
 
 spring:
   application:
-    name: chit-schemes-management-service
+    name: chit-finance-service
 
   datasource:
-    url: jdbc:postgresql://localhost:5432/finsphere_chit
+    url: jdbc:postgresql://localhost:5432/finsphere_chit_finance
     username: fsn_user
     password: fsn@123
     driver-class-name: org.postgresql.Driver
@@ -20,7 +18,7 @@ spring:
     properties:
       hibernate:
         dialect: org.hibernate.dialect.PostgreSQLDialect
-        default_schema: fsn_chit_management
+        default_schema: fsn_finance
 
   kafka:
     bootstrap-servers: 127.0.0.1:7092
