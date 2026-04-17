@@ -40,3 +40,8 @@ eureka:
       defaultZone: http://localhost:7761/eureka/
     register-with-eureka: true
     fetch-registry: true
+
+finsphere:
+  jwt:
+    secret: "YourVeryLongSuperSecretKeyForFinSphereNexus2026!!"
+    expirationMs: 86400000
