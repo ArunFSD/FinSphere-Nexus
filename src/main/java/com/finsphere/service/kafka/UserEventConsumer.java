@@ -1,4 +1,4 @@
-package com.finsphere.service;
+package com.finsphere.service.kafka;
 
 import com.finsphere.common.dto.events.UserUpdateEvent;
 import com.finsphere.entity.UserMirror;

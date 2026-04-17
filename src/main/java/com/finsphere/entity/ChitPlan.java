@@ -11,7 +11,7 @@ import java.util.List;
 @Entity
 @Getter
 @Setter
-@Table(name = "chit_plans", schema = "fsn_chit_management")
+@Table(name = "chit_plans") // UPDATED: Matches your SQL and YAML
 @NoArgsConstructor
 @AllArgsConstructor
 @Builder
@@ -31,7 +31,7 @@ public class ChitPlan {
     private Integer durationMonths;
 
     @Column(name = "commission_percentage", nullable = false)
-    private BigDecimal commissionPercentage; // Changed to BigDecimal for 3.5% etc.
+    private BigDecimal commissionPercentage;
 
     @Column(name = "commission_amount")
     private BigDecimal commissionAmount;
@@ -51,17 +51,29 @@ public class ChitPlan {
     @Column(name = "end_date")
     private LocalDate endDate;
 
+    @Builder.Default
     @Column(name = "is_active")
     private Boolean isActive = true;
 
     @Column(name = "created_by")
-    private Long createdBy; // Links to mirrored user_id
+    private Long createdBy;
 
     @Column(name = "created_at", updatable = false)
     private LocalDateTime createdAt;
 
     @Column(name = "updated_at")
     private LocalDateTime updatedAt;
+
+    // --- RELATIONSHIPS (CRITICAL FOR JPA QUERIES) ---
+
+    // This fixes the "UnknownPathException: Could not resolve attribute 'monthlyCycles'"
+    @OneToMany(mappedBy = "plan", cascade = CascadeType.ALL, fetch = FetchType.LAZY)
+    private List<ChitMonthlyCycle> monthlyCycles;
+
+    @OneToMany(mappedBy = "plan", cascade = CascadeType.ALL, fetch = FetchType.LAZY)
+    private List<ChitEnrollment> enrollments;
+
+    // --- AUDIT & FINANCIAL LOGIC ---
 
     @PrePersist
     public void onCreate() {

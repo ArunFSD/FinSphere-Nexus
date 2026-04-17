@@ -12,7 +12,7 @@ public interface ChitPlanRepository extends JpaRepository<ChitPlan, Long> {
 
     List<ChitPlan> findByIsActiveTrue();
 
-    @Query("SELECT p FROM ChitPlan p LEFT JOIN FETCH p.monthlyCycles WHERE p.isActive = true")
+    @Query("SELECT DISTINCT p FROM ChitPlan p LEFT JOIN FETCH p.monthlyCycles WHERE p.isActive = true")
     List<ChitPlan> findActivePlansWithCycles();
 
 }
