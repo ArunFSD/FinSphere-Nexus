@@ -35,7 +35,7 @@ public class AuthController {
         String ip = request.getRemoteAddr();
         String ua = request.getHeader("User-Agent");
 
-        log.info(">>>> [AUTH_API_HIT] Endpoint: /register | IP: {} | UA: {}", ip, ua);
+        log.info(">>>> [AUTH_API_HIT] Endpoint: /auth/register | IP: {} | UA: {}", ip, ua);
 
         ApiResponse<Void> response = authService.registerUser(regRequest, ip, ua);
 
@@ -54,7 +54,7 @@ public class AuthController {
         String ip = request.getRemoteAddr();
         String ua = request.getHeader("User-Agent");
 
-        log.info(">>>> [AUTH_API_HIT] Endpoint: /login | IP: {} | UA: {}", ip, ua);
+        log.info(">>>> [AUTH_API_HIT] Endpoint: /auth/login | IP: {} | UA: {}", ip, ua);
 
         ApiResponse<Map<String, String>> apiResponse = authService.login(loginRequest, ip, ua, response);
 
@@ -71,7 +71,7 @@ public class AuthController {
 
         String ip = request.getRemoteAddr();
 
-        log.info(">>>> [AUTH_API_HIT] Endpoint: /logout | IP: {}", ip);
+        log.info(">>>> [AUTH_API_HIT] Endpoint: /auth/logout | IP: {}", ip);
 
         ApiResponse<Void> apiResponse = authService.logout(request, response);
 
@@ -83,7 +83,7 @@ public class AuthController {
     @GetMapping("/validate")
     public ResponseEntity<ApiResponse<UserContext>> validateToken(HttpServletRequest request) {
 
-        log.info(">>>> [AUTH_API_HIT] Endpoint: /validate | IP: {}", request.getRemoteAddr());
+        log.info(">>>> [AUTH_API_HIT] Endpoint: /auth/validate | IP: {}", request.getRemoteAddr());
 
         String token = cookie.extractToken(request);
         UserContext identity = authService.validateSession(token);
