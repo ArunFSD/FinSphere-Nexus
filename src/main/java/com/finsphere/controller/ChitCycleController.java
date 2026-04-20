@@ -2,7 +2,7 @@ package com.finsphere.controller;
 
 import com.finsphere.common.dto.ApiResponse;
 import com.finsphere.dto.AuctionRequest;
-import com.finsphere.entity.ChitMonthlyCycle;
+import com.finsphere.entity.chit.ChitMonthlyCycle;
 import com.finsphere.service.AuctionService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;

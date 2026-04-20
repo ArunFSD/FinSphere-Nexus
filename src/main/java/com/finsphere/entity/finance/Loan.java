@@ -1,4 +1,4 @@
-package com.finsphere.entity;
+package com.finsphere.entity.finance;
 
 import jakarta.persistence.*;
 import lombok.*;

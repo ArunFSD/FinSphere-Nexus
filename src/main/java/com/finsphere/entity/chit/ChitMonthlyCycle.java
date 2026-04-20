@@ -1,4 +1,4 @@
-package com.finsphere.entity;
+package com.finsphere.entity.chit;
 
 import jakarta.persistence.*;
 import lombok.*;

@@ -3,7 +3,7 @@ package com.finsphere.chit.controller;
 
 import com.finsphere.common.dto.ApiResponse;
 import com.finsphere.dto.ChitPlanRequest;
-import com.finsphere.entity.ChitPlan;
+import com.finsphere.entity.chit.ChitPlan;
 import com.finsphere.service.ChitPlanService;
 import jakarta.servlet.http.HttpServletRequest;
 import lombok.RequiredArgsConstructor;

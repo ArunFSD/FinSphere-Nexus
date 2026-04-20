@@ -2,8 +2,8 @@ package com.finsphere.service;
 
 import com.finsphere.common.dto.ApiResponse;
 import com.finsphere.dto.ChitPlanRequest;
-import com.finsphere.entity.ChitMonthlyCycle;
-import com.finsphere.entity.ChitPlan;
+import com.finsphere.entity.chit.ChitMonthlyCycle;
+import com.finsphere.entity.chit.ChitPlan;
 import com.finsphere.repository.ChitMonthlyCycleRepository;
 import com.finsphere.repository.ChitPlanRepository;
 import lombok.RequiredArgsConstructor;

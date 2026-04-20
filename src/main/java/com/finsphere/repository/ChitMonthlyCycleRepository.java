@@ -1,6 +1,6 @@
 package com.finsphere.repository;
 
-import com.finsphere.entity.ChitMonthlyCycle;
+import com.finsphere.entity.chit.ChitMonthlyCycle;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.stereotype.Repository;
 

@@ -1,6 +1,6 @@
 package com.finsphere.repository;
 
-import com.finsphere.entity.ChitPlan;
+import com.finsphere.entity.chit.ChitPlan;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.stereotype.Repository;

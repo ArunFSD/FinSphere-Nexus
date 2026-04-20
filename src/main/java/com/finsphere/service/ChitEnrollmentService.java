@@ -2,8 +2,8 @@ package com.finsphere.service;
 
 import com.finsphere.common.dto.ApiResponse;
 import com.finsphere.common.exception.DomainException;
-import com.finsphere.entity.ChitEnrollment;
-import com.finsphere.entity.ChitPlan;
+import com.finsphere.entity.chit.ChitEnrollment;
+import com.finsphere.entity.chit.ChitPlan;
 import com.finsphere.repository.ChitEnrollmentRepository;
 import com.finsphere.repository.ChitPlanRepository;
 import lombok.RequiredArgsConstructor;
