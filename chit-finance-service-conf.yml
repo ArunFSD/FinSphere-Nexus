@@ -20,6 +20,10 @@ spring:
         dialect: org.hibernate.dialect.PostgreSQLDialect
         default_schema: fsn_finance
 
+  data:
+    mongodb:
+      uri: mongodb://localhost:27017/finsphere_transaction
+
   kafka:
     bootstrap-servers: 127.0.0.1:7092
     consumer:
