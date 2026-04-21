@@ -175,7 +175,17 @@ public class AuthService {
                 );
             }
 
-            String token = jwt.generateToken(user.getPhoneNumber(), user.getRole().name());
+            String fullName = (user.getProfile() != null && !user.getEmail().isEmpty())
+                    ? user.getProfile().getFullName() : "User";
+
+            Map<String, Object> claims = Map.of(
+                    "role", user.getRole().name(),
+                    "userId", user.getId(),
+                    "email", user.getEmail() != null && !user.getEmail().isEmpty() ? user.getEmail() : "",
+                    "fullName", fullName
+            );
+
+            String token = jwt.generateToken(user.getPhoneNumber(), claims);
             redis.saveSessionToRedis(token, user, ipAddress, userAgent);
             cookie.setHttpOnlyCookie(response, token);
 
