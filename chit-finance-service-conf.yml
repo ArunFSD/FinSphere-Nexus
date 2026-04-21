@@ -22,7 +22,7 @@ spring:
 
   data:
     mongodb:
-      uri: mongodb://localhost:27017/finsphere_transaction
+      uri: mongodb://localhost:17017/finsphere_transaction
 
   kafka:
     bootstrap-servers: 127.0.0.1:7092
