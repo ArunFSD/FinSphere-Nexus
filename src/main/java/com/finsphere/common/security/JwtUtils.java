@@ -1,5 +1,6 @@
 package com.finsphere.common.security;
 
+import io.jsonwebtoken.Claims;
 import io.jsonwebtoken.Jwts;
 import io.jsonwebtoken.security.Keys;
 import lombok.extern.slf4j.Slf4j;
@@ -9,6 +10,7 @@ import org.springframework.stereotype.Component;
 import javax.crypto.SecretKey;
 import java.nio.charset.StandardCharsets;
 import java.util.Date;
+import java.util.Map;
 
 @Component
 @Slf4j
@@ -24,36 +26,27 @@ public class JwtUtils {
         return Keys.hmacShaKeyFor(jwtSecret.getBytes(StandardCharsets.UTF_8));
     }
 
-    public String generateToken(String identifier, String role) {
-        log.debug(">>>> [JWT_GENERATE] Creating token for: {} | Role: {}", identifier, role);
+    public String generateToken(String identifier, Map<String, Object> extraClaims) {
+        log.debug(">>>> [JWT_GENERATE] Creating rich token for: {}", identifier);
         return Jwts.builder()
+                .claims(extraClaims)
                 .subject(identifier)
-                .claim("role", role)
                 .issuedAt(new Date())
                 .expiration(new Date((new Date()).getTime() + jwtExpirationsMs))
                 .signWith(getSigningKey())
                 .compact();
     }
 
-    public String getIdentifierFromToken(String token) {
+    public Claims getAllClaimsFromToken(String token) {
         return Jwts.parser()
                 .verifyWith(getSigningKey())
                 .build()
                 .parseSignedClaims(token)
-                .getPayload()
-                .getSubject();
+                .getPayload();
     }
 
-    /**
-     * NEW: Extracts the role claim so the Other Services can perform Role-Based Access Control
-     */
-    public String getRoleFromToken(String token) {
-        return Jwts.parser()
-                .verifyWith(getSigningKey())
-                .build()
-                .parseSignedClaims(token)
-                .getPayload()
-                .get("role", String.class);
+    public String getIdentifierFromToken(String token) {
+        return getAllClaimsFromToken(token).getSubject();
     }
 
     public boolean validateToken(String token) {
