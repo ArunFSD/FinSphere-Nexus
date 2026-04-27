@@ -23,6 +23,7 @@ spring:
   data:
     mongodb:
       uri: mongodb://localhost:17017/finsphere_transaction
+      auto-index-creation: true
 
   kafka:
     bootstrap-servers: 127.0.0.1:7092
