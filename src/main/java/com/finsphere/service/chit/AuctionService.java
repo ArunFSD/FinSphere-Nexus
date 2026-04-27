@@ -1,12 +1,12 @@
-package com.finsphere.service;
+package com.finsphere.service.chit;
 
 import com.finsphere.common.dto.ApiResponse;
 import com.finsphere.common.exception.DomainException;
 import com.finsphere.dto.AuctionRequest;
 import com.finsphere.entity.chit.ChitMonthlyCycle;
 import com.finsphere.entity.chit.ChitPlan;
-import com.finsphere.repository.ChitEnrollmentRepository;
-import com.finsphere.repository.ChitMonthlyCycleRepository;
+import com.finsphere.repository.jpa.ChitEnrollmentRepository;
+import com.finsphere.repository.jpa.ChitMonthlyCycleRepository;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.HttpStatus;

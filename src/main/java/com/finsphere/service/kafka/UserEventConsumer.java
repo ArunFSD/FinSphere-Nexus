@@ -2,7 +2,7 @@ package com.finsphere.service.kafka;
 
 import com.finsphere.common.dto.events.UserUpdateEvent;
 import com.finsphere.entity.UserMirror;
-import com.finsphere.repository.UserMirrorRepository;
+import com.finsphere.repository.jpa.UserMirrorRepository;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.kafka.annotation.KafkaListener;

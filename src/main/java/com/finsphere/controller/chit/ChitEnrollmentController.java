@@ -1,8 +1,9 @@
-package com.finsphere.controller;
+package com.finsphere.controller.chit;
 
 import com.finsphere.common.dto.ApiResponse;
+import com.finsphere.constansts.ApiConstants;
 import com.finsphere.dto.EnrollmentRequest;
-import com.finsphere.service.ChitEnrollmentService;
+import com.finsphere.service.chit.ChitEnrollmentService;
 import jakarta.servlet.http.HttpServletRequest;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -13,7 +14,7 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
 @RestController
-@RequestMapping("/enrollments")
+@RequestMapping(ApiConstants.ENROLLMENTS)
 @RequiredArgsConstructor
 @Slf4j
 public class ChitEnrollmentController {

@@ -15,4 +15,5 @@ public class ChitPlanRequest {
     private BigDecimal maxBidLimit;
     private Integer totalMembers;
     private LocalDate startDate;
+    private Integer paymentDuration;
 }

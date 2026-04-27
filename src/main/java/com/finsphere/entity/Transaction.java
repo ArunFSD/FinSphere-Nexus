@@ -1,57 +1,54 @@
 package com.finsphere.entity;
 
-import jakarta.persistence.*;
 import lombok.*;
+import org.springframework.data.annotation.CreatedDate;
+import org.springframework.data.annotation.Id;
+import org.springframework.data.mongodb.core.index.CompoundIndex;
+import org.springframework.data.mongodb.core.mapping.Document;
+import org.springframework.data.mongodb.core.mapping.Field;
 
 import java.math.BigDecimal;
-import java.time.LocalDateTime;
+import java.time.Instant;
+import java.time.LocalDate;
 
-@Entity
-@Table(
-        name = "transactions",
-        indexes = {
-                @Index(name = "idx_tx_user_id", columnList = "user_id"),
-                @Index(name = "idx_tx_target_lookup", columnList = "target_id, transaction_type"),
-                @Index(name = "idx_tx_date", columnList = "payment_date")
-        }
-)
+@Document(collection = "transactions")
+@CompoundIndex(name = "user_tx_query", def = "{'user_id': 1, 'payment_date': -1}")
 @Getter
 @Setter
 @NoArgsConstructor
 @AllArgsConstructor
 @Builder
 public class Transaction {
-
     @Id
-    @GeneratedValue(strategy = GenerationType.IDENTITY)
-    private Long id;
+    private String id;
 
-    @Column(name = "user_id", nullable = false)
+    @Field("user_id")
     private Long userId;
 
-    @Column(name = "transaction_type", nullable = false)
-    private String transactionType; // CHIT_PAYMENT or LOAN_PAYMENT
+    @Field("transaction_type")
+    private String transactionType;
 
-    @Column(name = "amount", nullable = false)
     private BigDecimal amount;
 
-    @Builder.Default
-    @Column(name = "payment_date")
-    private LocalDateTime paymentDate = LocalDateTime.now();
+    @Field("payment_date")
+    private LocalDate paymentDate;
 
-    @Builder.Default
-    @Column(name = "payment_mode")
-    private String paymentMode = "CASH";
+    @Field("payment_mode")
+    private String paymentMode;
 
-    @Column(name = "received_by_info")
-    private String receivedByInfo; // Store the collector's name or UPI ref
+    @Field("received_by_info")
+    private String receivedByInfo;
 
-    @Column(name = "target_id", nullable = false)
-    private Long targetId; // ID of the Loan or the Chit Cycle
+    @Field("target_id")
+    private Long targetId;
 
-    @Column(name = "remarks")
     private String remarks;
 
-    @Column(name = "created_by")
-    private Long createdBy; // Admin ID from Token
+    @Field("created_by")
+    private Long createdBy;
+
+    @CreatedDate
+    @Field("created_at")
+    private Instant createdAt; // Automatically populated if Auditing is enabled
+
 }

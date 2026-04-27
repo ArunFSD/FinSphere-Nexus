@@ -1,10 +1,11 @@
-package com.finsphere.chit.controller;
+package com.finsphere.controller.chit;
 
 
 import com.finsphere.common.dto.ApiResponse;
+import com.finsphere.constansts.ApiConstants;
 import com.finsphere.dto.ChitPlanRequest;
 import com.finsphere.entity.chit.ChitPlan;
-import com.finsphere.service.ChitPlanService;
+import com.finsphere.service.chit.ChitPlanService;
 import jakarta.servlet.http.HttpServletRequest;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -15,7 +16,7 @@ import org.springframework.web.bind.annotation.*;
 import java.util.List;
 
 @RestController
-@RequestMapping("/plans") // Base mapping for the whole project
+@RequestMapping(ApiConstants.PLANS) // Base mapping for the whole project
 @RequiredArgsConstructor
 @Slf4j
 public class ChitPlanController {

@@ -11,12 +11,13 @@ import lombok.extern.slf4j.Slf4j;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.core.authority.SimpleGrantedAuthority;
 import org.springframework.security.core.context.SecurityContextHolder;
+import org.springframework.security.web.authentication.WebAuthenticationDetailsSource;
 import org.springframework.stereotype.Component;
 import org.springframework.web.filter.OncePerRequestFilter;
 
 import java.io.IOException;
 import java.util.Arrays;
-import java.util.Collections;
+import java.util.List;
 
 @Component
 @RequiredArgsConstructor
@@ -46,18 +47,23 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
 
         // 2. Validate and Set Security Context
         if (token != null && jwtUtils.validateToken(token)) {
-            String phone = jwtUtils.getIdentifierFromToken(token);
-            String role = jwtUtils.getRoleFromToken(token);
 
-            log.info("<<<< [CHIT_AUTH_SUCCESS] User: {} | Role: {}", phone, role);
+            // Get all claims at once
+            var claims = jwtUtils.getAllClaimsFromToken(token);
 
-            UsernamePasswordAuthenticationToken auth = new UsernamePasswordAuthenticationToken(
-                    phone,
-                    null,
-                    Collections.singletonList(new SimpleGrantedAuthority("ROLE_" + role))
-            );
+            String identifier = claims.getSubject();
+            String role = claims.get("role", String.class);
 
-            SecurityContextHolder.getContext().setAuthentication(auth);
+            // Create Authority list
+            List<SimpleGrantedAuthority> authorities = List.of(new SimpleGrantedAuthority("ROLE_" + role));
+
+            // Set the authentication with the token in credentials (needed for SecurityUtils)
+            UsernamePasswordAuthenticationToken authentication =
+                    new UsernamePasswordAuthenticationToken(identifier, token, authorities);
+
+            authentication.setDetails(new WebAuthenticationDetailsSource().buildDetails(request));
+
+            SecurityContextHolder.getContext().setAuthentication(authentication);
         }
 
         filterChain.doFilter(request, response);

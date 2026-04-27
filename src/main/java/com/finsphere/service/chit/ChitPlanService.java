@@ -1,15 +1,15 @@
-package com.finsphere.service;
+package com.finsphere.service.chit;
 
 import com.finsphere.common.dto.ApiResponse;
+import com.finsphere.common.security.SecurityUtils; // Import our new utility
 import com.finsphere.dto.ChitPlanRequest;
 import com.finsphere.entity.chit.ChitMonthlyCycle;
 import com.finsphere.entity.chit.ChitPlan;
-import com.finsphere.repository.ChitMonthlyCycleRepository;
-import com.finsphere.repository.ChitPlanRepository;
+import com.finsphere.repository.jpa.ChitMonthlyCycleRepository;
+import com.finsphere.repository.jpa.ChitPlanRepository;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.HttpStatus;
-import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -25,16 +25,18 @@ public class ChitPlanService {
 
     private final ChitPlanRepository planRepository;
     private final ChitMonthlyCycleRepository cycleRepository;
+    private final SecurityUtils securityUtils; // Injecting the utility
 
     @Transactional
     public ApiResponse<ChitPlan> createPlan(ChitPlanRequest request) {
         log.info(">>>> [CHIT_PLAN_CREATE_START] Name: {} | Value: {}", request.getName(), request.getTotalValue());
 
         try {
-            // 1. Identify the Admin
-            String adminIdentifier = (String) SecurityContextHolder.getContext().getAuthentication().getPrincipal();
+            // 1. Identify the Admin using Rich JWT Data
+            Long adminId = securityUtils.getCurrentUserId();
+            String adminName = securityUtils.getCurrentUserFullName();
 
-            // 2. Save the Plan
+            // 2. Build the Plan Entity
             ChitPlan plan = ChitPlan.builder()
                     .name(request.getName())
                     .totalValue(request.getTotalValue())
@@ -45,21 +47,22 @@ public class ChitPlanService {
                     .totalMembers(request.getTotalMembers())
                     .startDate(request.getStartDate())
                     .isActive(true)
+                    .createdBy(adminId)
                     .build();
 
+            // Note: endDate is calculated in the Entity @PrePersist method we wrote earlier
             ChitPlan savedPlan = planRepository.save(plan);
-            log.info("<<<< [CHIT_PLAN_DB_SAVED] Plan ID: {} created by: {}", savedPlan.getId(), adminIdentifier);
+            log.info("<<<< [CHIT_PLAN_DB_SAVED] Plan ID: {} created by: {} (ID: {})",
+                    savedPlan.getId(), adminName, adminId);
 
             // 3. Generate Monthly Cycles
             List<ChitMonthlyCycle> cycles = new ArrayList<>();
             for (int i = 1; i <= savedPlan.getDurationMonths(); i++) {
-
                 cycles.add(ChitMonthlyCycle.builder()
                         .plan(savedPlan)
                         .monthlyCount(i)
                         .paymentWindowStart(savedPlan.getStartDate().plusMonths(i - 1))
-                        .paymentWindowDeadline(savedPlan.getStartDate().plusMonths(i - 1).plusDays(10))
-                        // Initialized to full installment; this decreases after auctions
+                        .paymentWindowDeadline(savedPlan.getStartDate().plusMonths(i).minusDays(1))
                         .monthlyPayableAmount(savedPlan.getMonthlyInstallment())
                         .isCycleClosed(false)
                         .auctionWinnerBid(BigDecimal.ZERO)
@@ -69,12 +72,13 @@ public class ChitPlanService {
             }
 
             cycleRepository.saveAll(cycles);
-            log.info("<<<< [CHIT_CYCLES_GENERATED] {} months initialized for Plan ID: {}", cycles.size(), savedPlan.getId());
+            log.info("<<<< [CHIT_CYCLES_GENERATED] {} months initialized for Plan ID: {}",
+                    cycles.size(), savedPlan.getId());
 
             return ApiResponse.<ChitPlan>builder()
                     .success(true)
                     .status(HttpStatus.CREATED.value())
-                    .message("Plan and " + savedPlan.getDurationMonths() + " cycles created.")
+                    .message("Plan created successfully by " + adminName)
                     .data(savedPlan)
                     .timestamp(LocalDateTime.now())
                     .build();
@@ -85,16 +89,10 @@ public class ChitPlanService {
         }
     }
 
-    /**
-     * Retrieves all plans that are currently marked as active.
-     * Uses readOnly transaction for better performance with PostgreSQL.
-     */
     @Transactional(readOnly = true)
     public ApiResponse<List<ChitPlan>> getAllActivePlans() {
-        log.info(">>>> [CHIT_PLAN_FETCH_ACTIVE] Requesting list of available plans");
-
+        log.info(">>>> [CHIT_PLAN_FETCH_ACTIVE] Requested by: {}", securityUtils.getCurrentUserFullName());
         List<ChitPlan> plans = planRepository.findByIsActiveTrue();
-
         return ApiResponse.<List<ChitPlan>>builder()
                 .success(true)
                 .status(HttpStatus.OK.value())

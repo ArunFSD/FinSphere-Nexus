@@ -1,4 +1,4 @@
-package com.finsphere.repository;
+package com.finsphere.repository.jpa;
 
 import com.finsphere.entity.chit.ChitPlan;
 import org.springframework.data.jpa.repository.JpaRepository;
