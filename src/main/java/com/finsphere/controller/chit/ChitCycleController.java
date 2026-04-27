@@ -27,7 +27,8 @@ public class ChitCycleController {
     public ResponseEntity<ApiResponse<ChitMonthlyCycle>> conductAuction(
             @Validated(ValidationGroups.Sequence.class)
             @RequestBody AuctionRequest request,
-            HttpServletRequest httpServletRequest) {
+            HttpServletRequest httpServletRequest
+    ) throws Exception {
 
         log.info(">>>> [CHIT_API_HIT] POST /chits/cycles/auction | IP: {} | Winner: {} | Bid: {}",
                 httpServletRequest.getRemoteAddr(), request.getWinnerUserId(), request.getBidAmount());
