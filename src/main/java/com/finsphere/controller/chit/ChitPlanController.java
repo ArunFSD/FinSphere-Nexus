@@ -2,6 +2,7 @@ package com.finsphere.controller.chit;
 
 
 import com.finsphere.common.dto.ApiResponse;
+import com.finsphere.common.validation.ValidationGroups;
 import com.finsphere.constansts.ApiConstants;
 import com.finsphere.dto.ChitPlanRequest;
 import com.finsphere.entity.chit.ChitPlan;
@@ -11,6 +12,7 @@ import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
+import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
@@ -26,16 +28,19 @@ public class ChitPlanController {
     @PostMapping("/create")
     @PreAuthorize("hasRole('ADMIN')")
     public ResponseEntity<ApiResponse<ChitPlan>> createPlan(
+            @Validated(ValidationGroups.Sequence.class)
             @RequestBody ChitPlanRequest request,
-            HttpServletRequest httpServletRequest) {
-
+            HttpServletRequest httpServletRequest
+    ) throws Exception {
         log.info(">>>> [CHIT_API_HIT] POST /chits/plans/create | IP: {}", httpServletRequest.getRemoteAddr());
         ApiResponse<ChitPlan> response = planService.createPlan(request);
         return ResponseEntity.status(response.getStatus()).body(response);
     }
 
     @GetMapping("/active")
-    public ResponseEntity<ApiResponse<List<ChitPlan>>> getActivePlans(HttpServletRequest httpServletRequest) {
+    public ResponseEntity<ApiResponse<List<ChitPlan>>> getActivePlans(
+            HttpServletRequest httpServletRequest
+    ) throws Exception {
         log.info(">>>> [CHIT_API_HIT] GET /chits/plans/active | IP: {}", httpServletRequest.getRemoteAddr());
         ApiResponse<List<ChitPlan>> response = planService.getAllActivePlans();
         return ResponseEntity.status(response.getStatus()).body(response);

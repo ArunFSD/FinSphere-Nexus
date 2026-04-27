@@ -62,7 +62,7 @@ public class ChitPlanService {
                         .plan(savedPlan)
                         .monthlyCount(i)
                         .paymentWindowStart(savedPlan.getStartDate().plusMonths(i - 1))
-                        .paymentWindowDeadline(savedPlan.getStartDate().plusMonths(i).minusDays(1))
+                        .paymentWindowDeadline(savedPlan.getStartDate().plusMonths(i - 1).plusDays(request.getPaymentDuration()))
                         .monthlyPayableAmount(savedPlan.getMonthlyInstallment())
                         .isCycleClosed(false)
                         .auctionWinnerBid(BigDecimal.ZERO)

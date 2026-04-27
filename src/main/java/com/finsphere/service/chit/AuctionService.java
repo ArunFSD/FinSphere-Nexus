@@ -26,18 +26,19 @@ public class AuctionService {
     private final ChitEnrollmentRepository enrollmentRepository;
 
     @Transactional
-    public ApiResponse<ChitMonthlyCycle> processAuction(Long planId, Integer monthCount, AuctionRequest request) {
+    public ApiResponse<ChitMonthlyCycle> processAuction(AuctionRequest request) {
 
-        log.info(">>>> [AUCTION_START] Plan: {} | Month: {} | Bid: {} | Winner: {}",
-                planId, monthCount, request.getBidAmount(), request.getWinnerUserId());
+        log.info(">>>> [AUCTION_START] Bid: {} | Winner: {}",
+                request.getBidAmount(), request.getWinnerUserId());
 
-        ChitMonthlyCycle cycle = cycleRepository.findByPlanIdAndMonthlyCount(planId, monthCount)
-                .orElseThrow(() -> new DomainException(
-                        HttpStatus.NOT_FOUND,
-                        "Cycle not found",
-                        "auction",
-                        "Invalid month or plan")
-                );
+        ChitMonthlyCycle cycle = cycleRepository.findByPlanIdAndMonthlyCount(
+                request.getPlanId(), request.getMonthlyCount()
+        ).orElseThrow(() -> new DomainException(
+                HttpStatus.NOT_FOUND,
+                "Cycle not found",
+                "auction",
+                "Invalid month or plan")
+        );
 
         if (Boolean.TRUE.equals(cycle.getIsCycleClosed())) {
             throw new DomainException(
@@ -49,7 +50,10 @@ public class AuctionService {
         }
 
         // 1. VALIDATION: How many slots does this user hold in this plan?
-        long slotsOwned = enrollmentRepository.countByPlanIdAndUserId(planId, request.getWinnerUserId());
+        long slotsOwned = enrollmentRepository.countByPlanIdAndUserId(
+                request.getPlanId(), request.getWinnerUserId()
+        );
+
         if (slotsOwned == 0) {
             throw new DomainException(
                     HttpStatus.BAD_REQUEST,
@@ -60,7 +64,9 @@ public class AuctionService {
         }
 
         // 2. VALIDATION: How many times has this user already won in this plan?
-        long timesWon = cycleRepository.countByPlanIdAndWinnerUserId(planId, request.getWinnerUserId());
+        long timesWon = cycleRepository.countByPlanIdAndWinnerUserId(
+                request.getPlanId(), request.getWinnerUserId()
+        );
 
         // A user can only win as many times as the number of slots they hold
         if (timesWon >= slotsOwned) {
@@ -78,14 +84,7 @@ public class AuctionService {
         ChitPlan plan = cycle.getPlan();
 
         // 3. INDUSTRIAL MATH: Dividend Calculation
-        BigDecimal commission = plan.getTotalValue()
-                .multiply(plan.getCommissionPercentage())
-                .divide(BigDecimal.valueOf(100), 2, RoundingMode.HALF_UP);
-
-        BigDecimal totalDividendSurplus = request.getBidAmount().subtract(commission);
-
-        BigDecimal dividendPerMember = totalDividendSurplus
-                .divide(BigDecimal.valueOf(plan.getTotalMembers()), 2, RoundingMode.HALF_UP);
+        BigDecimal dividendPerMember = getBigDecimal(request, plan);
 
         BigDecimal actualPayable = plan.getMonthlyInstallment().subtract(dividendPerMember);
 
@@ -99,7 +98,7 @@ public class AuctionService {
         ChitMonthlyCycle updatedCycle = cycleRepository.save(cycle);
 
         log.info("<<<< [AUCTION_SUCCESS] Plan: {} | Winner: {} (Win #{} of {}) | New Payable: {}",
-                planId, request.getWinnerUserId(), timesWon + 1, slotsOwned, actualPayable);
+                request.getPlanId(), request.getWinnerUserId(), timesWon + 1, slotsOwned, actualPayable);
 
         return ApiResponse.<ChitMonthlyCycle>builder()
                 .success(true)
@@ -108,5 +107,18 @@ public class AuctionService {
                 .data(updatedCycle)
                 .timestamp(LocalDateTime.now())
                 .build();
+    }
+
+    private static BigDecimal getBigDecimal(AuctionRequest request, ChitPlan plan) {
+        BigDecimal commission = plan.getTotalValue()
+                .multiply(plan.getCommissionPercentage())
+                .divide(BigDecimal.valueOf(100), 2, RoundingMode.HALF_UP);
+
+        BigDecimal totalDividendSurplus = request.getBidAmount().compareTo(commission) > 0
+                ? request.getBidAmount().subtract(commission)
+                : BigDecimal.ZERO;
+
+        return totalDividendSurplus
+                .divide(BigDecimal.valueOf(plan.getTotalMembers()), 2, RoundingMode.HALF_UP);
     }
 }
