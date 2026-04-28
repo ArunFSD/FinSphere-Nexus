@@ -15,16 +15,11 @@ spring:
             - Path=/auth/**
 
         # Route for Chit Fund (Updated to match your service name)
-        - id: chit-service
-          uri: lb://chit-schemes-management-service
+        - id: chit-finance-service
+          uri: lb://chit-finance-service
           predicates:
             - Path=/chits/**
-
-        # Route for Lending
-        - id: lending-service
-          uri: lb://lending-service
-          predicates:
-            - Path=/loans/**
+            - Path=/finance/**
 
 eureka:
   instance:
