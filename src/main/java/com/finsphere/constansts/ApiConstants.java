@@ -8,4 +8,5 @@ public interface ApiConstants {
 
     String FINANCE = "/finance";
     String LOAN = FINANCE + "/loans";
+    String TRANSACTIONS = FINANCE + "transactions";
 }

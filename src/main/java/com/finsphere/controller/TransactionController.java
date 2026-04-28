@@ -1,6 +1,7 @@
 package com.finsphere.controller;
 
 import com.finsphere.common.dto.ApiResponse;
+import com.finsphere.constansts.ApiConstants;
 import com.finsphere.dto.TransactionRequest;
 import com.finsphere.entity.Transaction;
 import com.finsphere.service.TransactionService;
@@ -14,7 +15,7 @@ import org.springframework.web.bind.annotation.*;
 import java.util.List;
 
 @RestController
-@RequestMapping("/finance/transactions")
+@RequestMapping(ApiConstants.TRANSACTIONS)
 @RequiredArgsConstructor
 @Slf4j
 public class TransactionController {
