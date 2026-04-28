@@ -1,5 +1,39 @@
-# All services will use 7761 for Eureka
+# application.yml
 eureka:
   client:
     service-url:
       defaultZone: http://localhost:7761/eureka/
+  instance:
+    instance-id: ${spring.application.name}:${server.port}
+    prefer-ip-address: true
+    hostname: localhost
+
+finsphere:
+  jwt:
+    secret: "YourVeryLongSuperSecretKeyForFinSphereNexus2026!!"
+    # Using 'secret' as the key name (your code was failing because it couldn't find this)
+    expirationMs: 86400000
+
+spring:
+  kafka:
+    bootstrap-servers: localhost:7092
+  datasource:
+    driver-class-name: org.postgresql.Driver
+    username: fsn_user
+    password: fsn@123
+
+management:
+  endpoints:
+    web:
+      exposure:
+        include: "health,info,prometheus,metrics"
+  endpoint:
+    health:
+      show-details: always
+
+logging:
+  pattern:
+    console: "%d{yyyy-MM-dd HH:mm:ss} [%thread] %-5level [${spring.application.name}] %logger{36} - %msg%n"
+  level:
+    com.finsphere: INFO
+    org.apache.kafka: WARN

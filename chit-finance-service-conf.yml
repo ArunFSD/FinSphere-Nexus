@@ -7,9 +7,7 @@ spring:
 
   datasource:
     url: jdbc:postgresql://localhost:5432/finsphere_chit_finance
-    username: fsn_user
-    password: fsn@123
-    driver-class-name: org.postgresql.Driver
+    # Note: username/password/driver are now inherited from application.yml
 
   jpa:
     hibernate:
@@ -26,7 +24,7 @@ spring:
       auto-index-creation: true
 
   kafka:
-    bootstrap-servers: 127.0.0.1:7092
+    # We keep the consumer config here because it is unique to this service
     consumer:
       group-id: chit-service-group
       auto-offset-reset: earliest
@@ -34,19 +32,3 @@ spring:
       value-deserializer: org.springframework.kafka.support.serializer.JsonDeserializer
       properties:
         spring.json.trusted.packages: "com.finsphere.common.*"
-
-eureka:
-  instance:
-    instance-id: ${spring.application.name}:${server.port}
-    hostname: localhost
-    prefer-ip-address: true
-  client:
-    service-url:
-      defaultZone: http://localhost:7761/eureka/
-    register-with-eureka: true
-    fetch-registry: true
-
-finsphere:
-  jwt:
-    secret: "YourVeryLongSuperSecretKeyForFinSphereNexus2026!!"
-    expirationMs: 86400000

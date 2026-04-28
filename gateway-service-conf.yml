@@ -4,35 +4,19 @@ server:
 spring:
   application:
     name: gateway-service
-
   cloud:
     gateway:
       routes:
-        # 1. Route for Auth Service
         - id: auth-service
           uri: lb://auth-service
           predicates:
             - Path=/auth/**
-
-        # 2. Route for Chit Fund / Finance Logic
         - id: chit-finance-service
           uri: lb://chit-finance-service
           predicates:
             - Path=/chits/**
             - Path=/finance/**
-
-        # 3. Route for Frontend UI (Must be LAST)
-        # This catches any request not matched by the specific services above
         - id: frontend-service
           uri: lb://frontend-service
           predicates:
             - Path=/**
-
-eureka:
-  instance:
-    instance-id: ${spring.application.name}:${server.port}
-    hostname: localhost
-    prefer-ip-address: true
-  client:
-    service-url:
-      defaultZone: http://localhost:7761/eureka/
