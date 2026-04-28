@@ -8,18 +8,25 @@ spring:
   cloud:
     gateway:
       routes:
-        # Route for Auth Service
+        # 1. Route for Auth Service
         - id: auth-service
           uri: lb://auth-service
           predicates:
             - Path=/auth/**
 
-        # Route for Chit Fund (Updated to match your service name)
+        # 2. Route for Chit Fund / Finance Logic
         - id: chit-finance-service
           uri: lb://chit-finance-service
           predicates:
             - Path=/chits/**
             - Path=/finance/**
+
+        # 3. Route for Frontend UI (Must be LAST)
+        # This catches any request not matched by the specific services above
+        - id: frontend-service
+          uri: lb://frontend-service
+          predicates:
+            - Path=/**
 
 eureka:
   instance:
