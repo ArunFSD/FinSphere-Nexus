@@ -1,0 +1,10 @@
+spring:
+  application:
+    name: frontend-service
+  cloud:
+    config:
+      uri: http://localhost:7888
+      name: frontend-service
+      fail-fast: true
+  profiles:
+    active: conf
