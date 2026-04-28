@@ -1,0 +1,39 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org"
+      th:replace="~{layout :: main-layout(~{:: #login-content})}">
+<body id="login-content">
+<div class="row justify-content-center">
+    <div class="col-md-4">
+        <div class="card p-4 mt-5">
+            <div class="card-body">
+                <h4 class="text-center mb-4">Sign In</h4>
+
+                <form id="loginForm" th:object="${loginRequest}">
+                    <div class="mb-3">
+                        <label class="form-label">Email or Phone Number</label>
+                        <input type="text" class="form-control" th:field="*{identifier}"
+                               placeholder="Enter email or phone" required>
+                    </div>
+
+                    <div class="mb-3">
+                        <div class="d-flex justify-content-between">
+                            <label class="form-label">Password</label>
+                            <a th:href="@{/forgot-password}" class="small text-decoration-none">Forgot?</a>
+                        </div>
+                        <input type="password" class="form-control" th:field="*{password}" required>
+                    </div>
+
+                    <button type="submit" class="btn btn-primary w-100">Login</button>
+
+                    <div class="text-center mt-4">
+                        <small class="text-muted">New to FinSphere? <a th:href="@{/register}">Register</a></small>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script th:src="@{/js/auth.js}"></script>
+</body>
+</html>

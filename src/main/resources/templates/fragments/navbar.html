@@ -1,0 +1,19 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<nav th:fragment="navbar-fragment" class="navbar navbar-expand-lg navbar-dark bg-dark mb-4">
+    <div class="container">
+        <a class="navbar-brand" href="#">FinSphere <span class="text-primary">Nexus</span></a>
+        <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav">
+            <span class="navbar-toggler-icon"></span>
+        </button>
+        <div class="collapse navbar-collapse" id="navbarNav">
+            <ul class="navbar-nav ms-auto">
+                <li class="nav-item"><a class="nav-link" href="/dashboard">Dashboard</a></li>
+                <li class="nav-item"><a class="nav-link" href="/chits">Chit Plans</a></li>
+                <li class="nav-item"><a class="nav-link" href="/loans">Loans</a></li>
+                <li class="nav-item"><a class="nav-link" href="/transactions">Log Book</a></li>
+            </ul>
+        </div>
+    </div>
+</nav>
+</html>

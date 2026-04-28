@@ -1,0 +1,73 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org"
+      th:replace="~{layout :: main-layout(~{:: #register-content})}">
+<body id="register-content">
+<div class="row justify-content-center">
+    <div class="col-md-8 col-lg-6">
+        <div class="card p-4 mt-4 mb-5">
+            <div class="card-body">
+                <h4 class="text-center mb-4">Create FinSphere Account</h4>
+
+                <form id="registerForm" th:object="${registrationRequest}">
+                    <div class="row g-3">
+                        <div class="col-md-12">
+                            <label class="form-label">Full Name</label>
+                            <input type="text" class="form-control" th:field="*{fullName}"
+                                   placeholder="Enter your full name" required>
+                        </div>
+
+                        <div class="col-md-6">
+                            <label class="form-label">Phone Number</label>
+                            <input type="text" class="form-control" th:field="*{phoneNumber}"
+                                   placeholder="9876543210" required>
+                        </div>
+
+                        <div class="col-md-6">
+                            <label class="form-label">Email Address</label>
+                            <input type="email" class="form-control" th:field="*{email}"
+                                   placeholder="name@example.com">
+                        </div>
+
+                        <div class="col-md-12">
+                            <label class="form-label">Password</label>
+                            <input type="password" class="form-control" th:field="*{password}"
+                                   placeholder="Minimum 8 characters" required>
+                        </div>
+
+                        <div class="col-md-12">
+                            <label class="form-label">Address</label>
+                            <textarea class="form-control" th:field="*{address}"
+                                      rows="2" placeholder="Full residential address" required></textarea>
+                        </div>
+
+                        <div class="col-md-6">
+                            <label class="form-label">Care Of (C/O)</label>
+                            <input type="text" class="form-control" th:field="*{careOf}"
+                                   placeholder="Father/Spouse name">
+                        </div>
+
+                        <div class="col-md-6">
+                            <label class="form-label">Register As</label>
+                            <select class="form-select" th:field="*{role}" required>
+                                <option value="CUSTOMER">Customer</option>
+                                <option value="ADMIN">Administrator</option>
+                            </select>
+                        </div>
+
+                        <div class="col-12 mt-4">
+                            <button type="submit" class="btn btn-primary w-100">Register Account</button>
+                        </div>
+                    </div>
+                </form>
+
+                <div class="col-12 text-center mt-3">
+                    <small class="text-muted">Already have an account? <a th:href="@{/login}">Login here</a></small>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script th:src="@{/js/auth.js}"></script>
+</body>
+</html>
