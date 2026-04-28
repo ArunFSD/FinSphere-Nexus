@@ -19,7 +19,7 @@ public class AuctionRequest {
     private Long planId;
 
     @NotNull(
-            message = "Monthly count is mandatory",
+            message = "Monthly Count is mandatory",
             groups = FirstOrder.class
     )
     private Integer monthlyCount;
@@ -38,18 +38,18 @@ public class AuctionRequest {
     */
 
     @NotNull(
-            message = "Bid amount is mandatory",
+            message = "Bid Amount is mandatory",
             groups = FirstOrder.class
     )
     @DecimalMin(
             value = "0.00",
-            message = "Bid amount cannot be negative",
+            message = "Bid Amount cannot be negative",
             groups = SecondOrder.class
     )
     private BigDecimal bidAmount;
 
     @NotNull(
-            message = "Winner User ID is mandatory",
+            message = "Winner User is mandatory",
             groups = FirstOrder.class
     )
     private Long winnerUserId;

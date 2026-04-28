@@ -40,7 +40,7 @@ public class LoanService {
                 .tenureDays(request.getTenureDays())
                 .amountGivenDate(LocalDate.now())
                 .startDate(request.getStartDate())
-                .endDate(endDate) // Manually calculated based on leaves
+                .endDate(endDate)
                 .isActive(true)
                 .build();
 

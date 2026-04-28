@@ -19,10 +19,15 @@ import java.util.List;
 public class TransactionService {
 
     private final TransactionRepository transactionRepository;
-    private final SecurityUtils securityUtils; // From Common Library
+    private final SecurityUtils securityUtils;
 
     @Transactional
     public ApiResponse<Transaction> recordPayment(TransactionRequest request) {
+        Long currentAdmin = securityUtils.getCurrentUserId();
+
+        log.info(">>>> [TX_START] Recording {} for User: {} | Amount: {} | Target: {} | By: {}",
+                request.getTransactionType(), request.getUserId(), request.getAmount(),
+                request.getTargetId(), currentAdmin);
 
         Transaction tx = Transaction.builder()
                 .userId(request.getUserId())
@@ -31,20 +36,30 @@ public class TransactionService {
                 .targetId(request.getTargetId())
                 .paymentMode(request.getPaymentMode())
                 .remarks(request.getRemarks())
-                .createdBy(securityUtils.getCurrentUserId())
+                .createdBy(currentAdmin)
                 .receivedByInfo(request.getReceivedByInfo())
                 .paymentDate(request.getPaymentDate())
                 .build();
 
+        Transaction savedTx = transactionRepository.save(tx);
+
+        log.info("<<<< [TX_SUCCESS] Transaction logged in MongoDB with ID: {} for User: {}",
+                savedTx.getId(), request.getUserId());
+
         return ApiResponse.<Transaction>builder()
                 .success(true)
-                .data(transactionRepository.save(tx))
+                .data(savedTx)
                 .message("Log Book updated in MongoDB")
                 .build();
     }
 
     public ApiResponse<List<Transaction>> getUserTransactions(Long userId) {
+        log.info(">>>> [TX_FETCH] Fetching transaction history for User: {}", userId);
+
         List<Transaction> history = transactionRepository.findByUserIdOrderByPaymentDateDesc(userId);
+
+        log.info("<<<< [TX_FETCH_SUCCESS] Found {} transactions for User: {}", history.size(), userId);
+
         return ApiResponse.<List<Transaction>>builder()
                 .success(true)
                 .status(HttpStatus.OK.value())

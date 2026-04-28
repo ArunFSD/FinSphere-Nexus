@@ -25,6 +25,19 @@ public class AuctionService {
     private final ChitMonthlyCycleRepository cycleRepository;
     private final ChitEnrollmentRepository enrollmentRepository;
 
+    private static BigDecimal calculateDividendPerMember(AuctionRequest request, ChitPlan plan) {
+        BigDecimal organizerCommission = plan.getTotalValue()
+                .multiply(plan.getCommissionPercentage())
+                .divide(BigDecimal.valueOf(100), 2, RoundingMode.HALF_UP);
+
+        BigDecimal dividendSurplus = (request.getBidAmount().compareTo(organizerCommission) > 0)
+                ? request.getBidAmount().subtract(organizerCommission)
+                : BigDecimal.ZERO;
+
+        return dividendSurplus
+                .divide(BigDecimal.valueOf(plan.getTotalMembers()), 2, RoundingMode.HALF_UP);
+    }
+
     @Transactional
     public ApiResponse<ChitMonthlyCycle> processAuction(AuctionRequest request) {
 
@@ -84,7 +97,7 @@ public class AuctionService {
         ChitPlan plan = cycle.getPlan();
 
         // 3. INDUSTRIAL MATH: Dividend Calculation
-        BigDecimal dividendPerMember = getBigDecimal(request, plan);
+        BigDecimal dividendPerMember = calculateDividendPerMember(request, plan);
 
         BigDecimal actualPayable = plan.getMonthlyInstallment().subtract(dividendPerMember);
 
@@ -107,18 +120,5 @@ public class AuctionService {
                 .data(updatedCycle)
                 .timestamp(LocalDateTime.now())
                 .build();
-    }
-
-    private static BigDecimal getBigDecimal(AuctionRequest request, ChitPlan plan) {
-        BigDecimal commission = plan.getTotalValue()
-                .multiply(plan.getCommissionPercentage())
-                .divide(BigDecimal.valueOf(100), 2, RoundingMode.HALF_UP);
-
-        BigDecimal totalDividendSurplus = request.getBidAmount().compareTo(commission) > 0
-                ? request.getBidAmount().subtract(commission)
-                : BigDecimal.ZERO;
-
-        return totalDividendSurplus
-                .divide(BigDecimal.valueOf(plan.getTotalMembers()), 2, RoundingMode.HALF_UP);
     }
 }

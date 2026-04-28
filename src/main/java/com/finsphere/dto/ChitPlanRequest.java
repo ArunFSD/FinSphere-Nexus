@@ -11,29 +11,29 @@ import java.time.LocalDate;
 public class ChitPlanRequest {
 
     @NotBlank(
-            message = "Chit Plan name is mandatory",
+            message = "Chit Plan Name is mandatory",
             groups = FirstOrder.class
     )
     @Size(
             max = 200,
-            message = "Plan name must not exceed 200 characters",
+            message = "Plan Name must not exceed 200 characters",
             groups = SecondOrder.class
     )
     private String name;
 
     @NotNull(
-            message = "Total value is mandatory",
+            message = "Total Value is mandatory",
             groups = FirstOrder.class
     )
     @DecimalMin(
             value = "0.00",
-            message = "Total value cannot be negative",
+            message = "Total Value cannot be negative",
             groups = SecondOrder.class
     )
     private BigDecimal totalValue;
 
     @NotNull(
-            message = "Duration in months is mandatory",
+            message = "Duration In Months is mandatory",
             groups = FirstOrder.class
     )
     @Min(
@@ -59,29 +59,29 @@ public class ChitPlanRequest {
     private BigDecimal commissionPercentage;
 
     @NotNull(
-            message = "Monthly installment is mandatory",
+            message = "Monthly Installment is mandatory",
             groups = FirstOrder.class
     )
     @DecimalMin(
             value = "0.00",
-            message = "Monthly installment cannot be negative",
+            message = "Monthly Installment cannot be negative",
             groups = SecondOrder.class
     )
     private BigDecimal monthlyInstallment;
 
     @NotNull(
-            message = "Max bid limit is mandatory",
+            message = "Max Bid Limit is mandatory",
             groups = FirstOrder.class
     )
     @DecimalMin(
             value = "0.00",
-            message = "Max bid limit cannot be negative",
+            message = "Max Bid Limit cannot be negative",
             groups = SecondOrder.class
     )
     private BigDecimal maxBidLimit;
 
     @NotNull(
-            message = "Total members count is mandatory",
+            message = "Total Members Count is mandatory",
             groups = FirstOrder.class
     )
     @Min(
@@ -92,7 +92,7 @@ public class ChitPlanRequest {
     private Integer totalMembers;
 
     @NotNull(
-            message = "Start date is mandatory",
+            message = "Start Date is mandatory",
             groups = FirstOrder.class
     )
     private LocalDate startDate;
@@ -104,7 +104,7 @@ public class ChitPlanRequest {
     )
     @Min(
             value = 1,
-            message = "Payment duration must be at least 1",
+            message = "Payment Duration must be at least 1",
             groups = SecondOrder.class
     )
     private Integer paymentDuration;

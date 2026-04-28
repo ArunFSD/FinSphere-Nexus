@@ -1,6 +1,7 @@
 package com.finsphere.controller.chit;
 
 import com.finsphere.common.dto.ApiResponse;
+import com.finsphere.common.validation.ValidationGroups;
 import com.finsphere.constansts.ApiConstants;
 import com.finsphere.dto.EnrollmentRequest;
 import com.finsphere.service.chit.ChitEnrollmentService;
@@ -8,6 +9,7 @@ import jakarta.servlet.http.HttpServletRequest;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.ResponseEntity;
+import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
@@ -23,6 +25,7 @@ public class ChitEnrollmentController {
 
     @PostMapping("/join")
     public ResponseEntity<ApiResponse<Void>> enroll(
+            @Validated(ValidationGroups.Sequence.class)
             @RequestBody EnrollmentRequest request,
             HttpServletRequest httpServletRequest) {
 
