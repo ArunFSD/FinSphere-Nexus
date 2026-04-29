@@ -1,11 +1,13 @@
 spring:
-  main:
-    web-application-type: reactive
-    allow-bean-definition-overriding: true
   application:
     name: gateway-service
   cloud:
     config:
       uri: http://localhost:7888
-      name: gateway-service-conf
+      name: gateway-service
       fail-fast: true
+  profiles:
+    active: conf
+  main:
+    allow-bean-definition-overriding: true
+    web-application-type: reactive
