@@ -1,7 +1,5 @@
 package com.finsphere.auth.service;
 
-import com.finsphere.auth.dto.LoginRequest;
-import com.finsphere.auth.dto.RegistrationRequest;
 import com.finsphere.auth.entity.CustomerProfile;
 import com.finsphere.auth.entity.User;
 import com.finsphere.auth.entity.UserRole;
@@ -12,6 +10,8 @@ import com.finsphere.auth.util.CookieUtils;
 import com.finsphere.auth.util.RedisUtils;
 import com.finsphere.common.dto.ApiResponse;
 import com.finsphere.common.dto.UserContext;
+import com.finsphere.common.dto.auth.LoginRequest;
+import com.finsphere.common.dto.auth.RegistrationRequest;
 import com.finsphere.common.dto.events.UserUpdateEvent;
 import com.finsphere.common.exception.DomainException;
 import com.finsphere.common.security.JwtUtils;

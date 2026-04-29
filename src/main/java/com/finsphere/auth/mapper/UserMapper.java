@@ -1,12 +1,12 @@
 package com.finsphere.auth.mapper;
 
-import com.finsphere.auth.dto.RegistrationRequest;
-import com.finsphere.auth.entity.User;
+
 import com.finsphere.auth.entity.CustomerProfile;
+import com.finsphere.auth.entity.User;
+import com.finsphere.common.dto.auth.RegistrationRequest;
 import org.mapstruct.BeanMapping;
 import org.mapstruct.Mapper;
 import org.mapstruct.Mapping;
-import org.mapstruct.factory.Mappers;
 
 
 @Mapper(componentModel = "spring")

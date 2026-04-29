@@ -1,11 +1,11 @@
 package com.finsphere.auth.controller;
 
-import com.finsphere.auth.dto.LoginRequest;
-import com.finsphere.auth.dto.RegistrationRequest;
 import com.finsphere.auth.service.AuthService;
 import com.finsphere.auth.util.CookieUtils;
 import com.finsphere.common.dto.ApiResponse;
 import com.finsphere.common.dto.UserContext;
+import com.finsphere.common.dto.auth.LoginRequest;
+import com.finsphere.common.dto.auth.RegistrationRequest;
 import com.finsphere.common.validation.ValidationGroups;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
