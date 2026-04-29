@@ -1,0 +1,38 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org" th:fragment="auth-layout(content)">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>FinSphere Nexus</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;600;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" th:href="@{/css/auth-style.css}">
+</head>
+<body>
+
+<header class="auth-header">
+    <h1 class="brand-title">FinSphere Nexus</h1>
+</header>
+
+<main class="auth-wrapper">
+    <div class="auth-card">
+        <div class="row g-0">
+            <div class="col-lg-6 auth-image-side">
+                <h2 class="fw-bold">Secure Banking.</h2>
+                <p class="text-white-50">Manage your chit schemes and finances in one unified network.</p>
+            </div>
+
+            <div class="col-lg-6 col-md-12 auth-form-side">
+                <div th:replace="${content}"></div>
+            </div>
+        </div>
+    </div>
+</main>
+
+<footer>
+    &copy; 2026 FinSphere Nexus Financial Solutions. All data encrypted.
+</footer>
+
+<script th:src="@{/js/auth.js}"></script>
+</body>
+</html>

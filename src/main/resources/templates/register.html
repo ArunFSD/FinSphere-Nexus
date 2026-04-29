@@ -1,73 +1,33 @@
 <!DOCTYPE html>
 <html xmlns:th="http://www.thymeleaf.org"
-      th:replace="~{layout :: main-layout(~{:: #register-content})}">
-<body id="register-content">
-<div class="row justify-content-center">
-    <div class="col-md-8 col-lg-6">
-        <div class="card p-4 mt-4 mb-5">
-            <div class="card-body">
-                <h4 class="text-center mb-4">Create FinSphere Account</h4>
-
-                <form id="registerForm" th:object="${registrationRequest}">
-                    <div class="row g-3">
-                        <div class="col-md-12">
-                            <label class="form-label">Full Name</label>
-                            <input type="text" class="form-control" th:field="*{fullName}"
-                                   placeholder="Enter your full name" required>
-                        </div>
-
-                        <div class="col-md-6">
-                            <label class="form-label">Phone Number</label>
-                            <input type="text" class="form-control" th:field="*{phoneNumber}"
-                                   placeholder="9876543210" required>
-                        </div>
-
-                        <div class="col-md-6">
-                            <label class="form-label">Email Address</label>
-                            <input type="email" class="form-control" th:field="*{email}"
-                                   placeholder="name@example.com">
-                        </div>
-
-                        <div class="col-md-12">
-                            <label class="form-label">Password</label>
-                            <input type="password" class="form-control" th:field="*{password}"
-                                   placeholder="Minimum 8 characters" required>
-                        </div>
-
-                        <div class="col-md-12">
-                            <label class="form-label">Address</label>
-                            <textarea class="form-control" th:field="*{address}"
-                                      rows="2" placeholder="Full residential address" required></textarea>
-                        </div>
-
-                        <div class="col-md-6">
-                            <label class="form-label">Care Of (C/O)</label>
-                            <input type="text" class="form-control" th:field="*{careOf}"
-                                   placeholder="Father/Spouse name">
-                        </div>
-
-                        <div class="col-md-6">
-                            <label class="form-label">Register As</label>
-                            <select class="form-select" th:field="*{role}" required>
-                                <option value="CUSTOMER">Customer</option>
-                                <option value="ADMIN">Administrator</option>
-                            </select>
-                        </div>
-
-                        <div class="col-12 mt-4">
-                            <button type="submit" class="btn btn-primary w-100">Register Account</button>
-                        </div>
-                    </div>
-                </form>
-
-                <div class="col-12 text-center mt-3">
-                    <small class="text-muted">Already have an account? <a th:href="@{/login}">Login here</a></small>
-                </div>
-            </div>
-        </div>
-    </div>
+      th:replace="~{auth-layout :: auth-layout(~{:: #login-content})}">
+<body id="login-content">
+<div class="mb-4">
+    <h2 class="fw-bold">Sign In</h2>
+    <p class="text-muted">Enter your credentials to access your account.</p>
 </div>
 
-<script th:src="@{/js/auth.js}"></script>
+<form id="loginForm" th:object="${loginRequest}">
+    <div class="mb-3">
+        <label class="form-label small fw-semibold text-uppercase">Identifier</label>
+        <input type="text" class="form-control" th:field="*{identifier}" placeholder="Email or Phone" required>
+    </div>
+
+    <div class="mb-4">
+        <div class="d-flex justify-content-between">
+            <label class="form-label small fw-semibold text-uppercase">Password</label>
+            <a th:href="@{/forgot-password}" class="small" style="color: var(--accent-purple);">Forgot?</a>
+        </div>
+        <input type="password" class="form-control" th:field="*{password}" placeholder="••••••••" required>
+    </div>
+
+    <button type="submit" class="btn btn-primary w-100">Login to FinSphere</button>
+
+    <div class="text-center mt-4">
+        <p class="small text-muted">New to our network?
+            <a th:href="@{/register}" class="fw-bold" style="color: var(--accent-purple);">Register Now</a>
+        </p>
+    </div>
+</form>
 </body>
 </html>
