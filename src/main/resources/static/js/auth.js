@@ -201,16 +201,15 @@ function toggleLoading(btn, isLoading, originalText) {
 }
 
 /**
- * FinSphere Nexus Notification System
+ * Notification System
  * Feature: Hover to pause, Dynamic Colors, Auto-redirect
  */
 const Toast = Swal.mixin({
     toast: true,
-    position: 'top-end', // Stays 'top-end' here; CSS media queries handle mobile centering
+    position: 'top-end',
     showConfirmButton: false,
     timer: 4000,
     timerProgressBar: true,
-    // INTERFACE: Pause timer on hover
     didOpen: (toast) => {
         toast.addEventListener('mouseenter', Swal.stopTimer);
         toast.addEventListener('mouseleave', Swal.resumeTimer);
