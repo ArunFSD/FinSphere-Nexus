@@ -79,7 +79,11 @@ public class AuthService {
                     "Validation failed: " + businessErrors.values()
             );
 
-            throw new DomainException(HttpStatus.BAD_REQUEST, "Validation Failed", businessErrors);
+            throw new DomainException(
+                    HttpStatus.BAD_REQUEST,
+                    "Invalid details! Please check and try again",
+                    businessErrors
+            );
         }
 
         // 2. Normalization & Mapping
@@ -129,7 +133,7 @@ public class AuthService {
         return ApiResponse.<Void>builder()
                 .success(true)
                 .status(HttpStatus.CREATED.value())
-                .message("Registration successful for " + profile.getFullName())
+                .message("Account successfully created")
                 .timestamp(LocalDateTime.now())
                 .build();
     }
