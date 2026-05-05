@@ -1,0 +1,210 @@
+/* --- GLOBAL CONFIGURATION --- */
+:root {
+    --bg-dark: #0f0f12;
+    --card-dark: #16161a;
+    --accent-purple: #6c5ce7;
+    --accent-hover: #5b4cc4;
+    --error-red: #ff6b81;
+    --success-green: #2ed573;
+    --text-main: #ffffff;
+    --text-label: #e0e0e0;
+    --input-bg: #1f1f23;
+}
+
+body {
+    background-color: var(--bg-dark);
+    color: var(--text-main);
+    font-family: 'Inter', sans-serif;
+    min-height: 100vh;
+    margin: 0;
+    display: flex;
+    flex-direction: column;
+}
+
+/* --- COMMON FORM & INPUTS --- */
+.form-label {
+    color: var(--text-label);
+    font-weight: 600;
+    margin-bottom: 0.5rem;
+    display: block;
+}
+
+.form-control, .form-select, textarea {
+    background-color: var(--input-bg) !important;
+    border: 2px solid #333 !important;
+    color: #fff !important;
+    padding: 0.85rem 1rem;
+    border-radius: 12px;
+    transition: border-color 0.3s ease;
+}
+
+.form-control::placeholder {
+    color: #aaaaaa !important;
+    opacity: 1;
+}
+
+/* --- SELECT CUSTOMIZATION --- */
+.form-select {
+    background-image: url("data:image/svg+xml,%3csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 16 16'%3e%3cpath fill='none' stroke='%23ffffff' stroke-linecap='round' stroke-linejoin='round' stroke-width='2' d='m2 5 6 6 6-6'/%3e%3c/svg%3e") !important;
+    background-position: right 1rem center !important;
+    background-repeat: no-repeat !important;
+    background-size: 16px 12px !important;
+    appearance: none;
+    cursor: pointer;
+}
+
+.form-select option {
+    background-color: var(--card-dark) !important;
+    color: #fff !important;
+}
+
+.form-select:focus {
+    border-color: var(--accent-purple) !important;
+    box-shadow: 0 0 0 0.25rem rgba(108, 92, 231, 0.25) !important;
+    outline: none;
+}
+
+/* --- VALIDATION STATES --- */
+.is-invalid {
+    border-color: var(--error-red) !important;
+    background-color: rgba(255, 107, 129, 0.05) !important;
+}
+
+.is-valid {
+    border-color: var(--success-green) !important;
+    background-color: rgba(46, 213, 115, 0.05) !important;
+}
+
+.error-text {
+    color: var(--error-red) !important;
+    font-size: 0.85rem;
+    font-weight: 600;
+    margin-top: 0.4rem;
+}
+
+.required-field::after {
+    content: " *";
+    color: var(--error-red);
+    font-weight: bold;
+}
+
+/* --- BUTTONS --- */
+.btn-primary {
+    background-color: var(--accent-purple) !important;
+    border: none !important;
+    padding: 1rem;
+    font-weight: 700;
+    border-radius: 12px;
+    transition: all 0.3s ease;
+}
+
+.btn-primary:hover {
+    background-color: var(--accent-hover) !important;
+    transform: translateY(-1px);
+}
+
+/* --- TEXTAREA & SCROLLBAR --- */
+.fixed-textarea {
+    resize: none;
+    height: 120px;
+}
+
+::-webkit-scrollbar { width: 8px; }
+::-webkit-scrollbar-track { background: var(--bg-dark); }
+::-webkit-scrollbar-thumb { background: #3d3d45; border-radius: 10px; }
+::-webkit-scrollbar-thumb:hover { background: var(--accent-purple); }
+
+/* --- FOOTER --- */
+footer {
+    width: 100%;
+    padding: 1.5rem 0;
+    background-color: var(--bg-dark);
+    text-align: center;
+    color: #666;
+    font-size: 0.9rem;
+    border-top: 1px solid rgba(255, 255, 255, 0.05);
+    margin-top: auto;
+}
+
+/* --- NOTIFICATION SYSTEM (Toast) --- */
+.swal2-container.swal2-top-end {
+    position: fixed !important;
+    top: 20px !important;      /* Move it to the very top edge */
+    right: 20px !important;
+    left: auto !important;
+    width: auto !important;
+    background: transparent !important;
+    z-index: 10000 !important; /* Ensure it stays above everything */
+}
+
+.industrial-toast {
+    display: flex !important;
+    flex-direction: row !important;
+    align-items: center !important;
+    width: max-content !important;    /* Ensure it expands to fit text */
+    min-width: 350px !important;
+    max-width: 90vw !important;
+    height: auto !important;
+    border-radius: 4px !important;
+    padding: 12px 20px !important;
+    color: #fff !important;
+    white-space: nowrap !important;   /* Keep it on one line for the industrial look */
+    box-shadow: 0 10px 30px rgba(0, 0, 0, 0.5) !important;
+}
+
+/* Ensure mobile doesn't cut it off */
+@media (max-width: 600px) {
+    .swal2-container.swal2-top-end {
+        top: 10px !important;
+        right: 10px !important;
+        left: 10px !important;
+        justify-content: center !important;
+    }
+
+    .industrial-toast {
+        min-width: 0 !important;
+        width: 100% !important;
+        white-space: normal !important;
+        text-align: center;
+    }
+}
+
+.success-toast { background-color: var(--success-green) !important; }
+.error-toast { background-color: var(--error-red) !important; }
+.info-toast { background-color: var(--accent-purple) !important; }
+
+/* --- UNIVERSAL WHITE SYMBOLS FOR TOASTS --- */
+/* Overrides the icon circle border */
+.swal2-icon.swal2-success, 
+.swal2-icon.swal2-error, 
+.swal2-icon.swal2-info, 
+.swal2-icon.swal2-warning {
+    border-color: #ffffff !important;
+    color: #ffffff !important;
+}
+
+/* Overrides the success checkmark lines */
+.swal2-icon.swal2-success [class^='swal2-success-line'] {
+    background-color: #ffffff !important;
+}
+
+/* Overrides the success circular hole effect */
+.swal2-icon.swal2-success .swal2-success-ring {
+    border: .25em solid rgba(255, 255, 255, .3);
+}
+
+/* Overrides the error 'X' mark lines */
+.swal2-icon.swal2-error [class^='swal2-x-mark-line'] {
+    background-color: #ffffff !important;
+}
+
+/* Overrides the 'i' for info and '!' for warning symbols */
+.swal2-icon.swal2-info::before,
+.swal2-icon.swal2-warning::before {
+    color: #ffffff !important;
+}
+
+/* Progress bar color for consistency */
+.swal2-timer-progress-bar {
+    background: rgba(255, 255, 255, 0.5) !important;
+}

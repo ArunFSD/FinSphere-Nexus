@@ -52,29 +52,43 @@ const rules = {
     }
 };
 
+/**
+ * AUTO-CHECK FOR PENDING MESSAGES ON LOAD
+ * Executes whenever any page with auth.js loads
+ */
 document.addEventListener('DOMContentLoaded', () => {
+    // 1. Check for stored notifications
+    const pendingMsg = sessionStorage.getItem('pendingSuccess');
+    if (pendingMsg) {
+        notify.success(pendingMsg);
+        sessionStorage.removeItem('pendingSuccess');
+    }
+
+    // 2. Auth Form Handler
     const authForm = document.querySelector('form');
     if (!authForm) return;
 
     authForm.addEventListener('submit', async (e) => {
         e.preventDefault();
 
-        // 1. Validation Logic...
+        // Validation Logic
         const inputs = authForm.querySelectorAll('input, select, textarea');
         let isFormValid = true;
         inputs.forEach(input => {
-            if (!validateField(input)) isFormValid = false;
+            if (typeof validateField === "function" && !validateField(input)) {
+                isFormValid = false;
+            }
         });
         if (!isFormValid) return;
 
-        // 2. Prepare Request
+        // Prepare Request
         const submitBtn = authForm.querySelector('button[type="submit"]');
         const originalBtnText = submitBtn.innerText;
         const formData = Object.fromEntries(new FormData(authForm));
         const endpoint = '/auth/register';
 
         try {
-            toggleLoading(submitBtn, true, originalBtnText);
+            if (typeof toggleLoading === "function") toggleLoading(submitBtn, true, originalBtnText);
 
             const response = await fetch(endpoint, {
                 method: 'POST',
@@ -84,27 +98,20 @@ document.addEventListener('DOMContentLoaded', () => {
 
             const result = await response.json();
 
-            // 3. Handle Success
+            // Handle Success with Redirect Persistence
             if (response.status === 201 || result.success) {
-                notify.success(result.message || "Account successfully created");
-
-                // INDUSTRIAL WAY: Instead of a blind setTimeout, 
-                // we use the promise returned by the Toast to redirect 
-                // ONLY after the notification is dismissed (either by timer or close).
-                Toast.fire({
-                    icon: 'success',
-                    title: result.message || "Account successfully created",
-                    customClass: { popup: 'industrial-toast success-toast', icon: 'small-icon' }
-                }).then((result) => {
-                    // Redirect once the toast disappears
-                    window.location.href = '/login';
-                });
+                notify.successAndRedirect(
+                    result.message || "Account successfully created", 
+                    '/register'
+                );
             }
-            // 4. Handle Errors
+            // Handle Validation Errors from Server
             else if (response.status === 400 && result.errors) {
                 Object.keys(result.errors).forEach(fieldName => {
                     const input = authForm.querySelector(`[name="${fieldName}"]`);
-                    showError(input, result.errors[fieldName]);
+                    if (typeof showError === "function") {
+                        showError(input, result.errors[fieldName]);
+                    }
                 });
                 notify.error("Invalid details! Please check and try again");
             }
@@ -115,7 +122,7 @@ document.addEventListener('DOMContentLoaded', () => {
         } catch (err) {
             notify.error("Connection error! We are unable to reach the server at this time");
         } finally {
-            toggleLoading(submitBtn, false, originalBtnText);
+            if (typeof toggleLoading === "function") toggleLoading(submitBtn, false, originalBtnText);
         }
     });
 });
@@ -213,8 +220,6 @@ const Toast = Swal.mixin({
 const notify = {
     /**
      * Success Notification
-     * @param {string} msg - Message to display
-     * @returns {Promise} - Resolves when toast is closed
      */
     success: (msg) => Toast.fire({ 
         icon: 'success', 
@@ -247,5 +252,14 @@ const notify = {
             popup: 'industrial-toast info-toast', 
             icon: 'small-icon' 
         } 
-    })
+    }),
+
+    /**
+     * SUCCESS AFTER RELOAD/REDIRECT
+     * Saves message to session storage before the page changes
+     */
+    successAndRedirect: (msg, url) => {
+        sessionStorage.setItem('pendingSuccess', msg);
+        window.location.href = url;
+    }
 };

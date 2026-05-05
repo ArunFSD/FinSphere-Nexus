@@ -1,77 +1,51 @@
-:root {
-    --bg-dark: #0f0f12;
-    --card-dark: #16161a;
-    --accent-purple: #6c5ce7;
-    --accent-hover: #5b4cc4;
-    --error-red: #ff6b81;
-    --success-green: #2ed573;
-    --text-main: #ffffff;
-    --text-label: #e0e0e0;
-    --input-bg: #1f1f23;
-    /* Only Header is fixed now */
-    --header-height: 115px;
-}
-
-body {
-    background-color: var(--bg-dark);
-    color: var(--text-main);
-    font-family: 'Inter', sans-serif;
-    min-height: 100vh;
-    margin: 0;
-    display: flex;
-    flex-direction: column;
-    /* Space for the fixed header at the top */
-    padding-top: var(--header-height);
-}
-
-/* --- FIXED HEADER SECTION --- */
+/* --- RELATIVE HEADER SECTION --- */
 .auth-header {
-    position: fixed;
-    top: 0;
-    left: 0;
+    position: relative; /* Changed from Fixed */
     width: 100%;
-    height: var(--header-height);
-    background-color: var(--bg-dark);
-    z-index: 1000;
+    padding: 1.5rem 0; /* Reduced size */
+    background: rgba(22, 22, 26, 0.95);
+    backdrop-filter: blur(12px);
     display: flex;
     flex-direction: column;
     align-items: center;
     justify-content: center;
-    border-bottom: 1px solid rgba(255, 255, 255, 0.05);
+    border-bottom: 1px solid rgba(108, 92, 231, 0.2);
+    box-shadow: 0 10px 30px rgba(0, 0, 0, 0.5);
 }
 
 .brand-title {
-    font-size: 3rem;
-    font-weight: 750;
-    letter-spacing: -1px;
+    font-size: 2.5rem; /* Reduced size */
+    font-weight: 800;
+    letter-spacing: 4px; /* Widened letters */
     background: linear-gradient(to right, #ffffff, var(--accent-purple));
     -webkit-background-clip: text;
     -webkit-text-fill-color: transparent;
-    margin-bottom: 0.5rem;
+    margin-bottom: 0.25rem;
     width: 100%;
     text-align: center;
-    line-height: 1;
-}
-
-.brand-tagline {
-    font-size: 0.9rem;
-    font-weight: 750;
-    color: var(--accent-purple);
-    margin-top: -0.5rem;
-    width: 90%;
-    max-width: 325px;
-    display: flex;
-    justify-content: space-between;
+    line-height: 1.2;
     text-transform: uppercase;
 }
 
-/* --- CENTERED WRAPPER --- */
+.brand-tagline {
+    font-size: 0.75rem; /* Reduced size */
+    font-weight: 700;
+    color: var(--accent-purple);
+    width: 100%;
+    max-width: 300px;
+    display: flex;
+    justify-content: space-evenly; /* Better spacing for responsiveness */
+    text-transform: uppercase;
+    letter-spacing: 1px;
+}
+
+/* --- LAYOUT WRAPPER --- */
 .auth-wrapper {
-    flex: 1; /* This pushes the footer down to the bottom if content is short */
+    flex: 1;
     display: flex;
     align-items: center;
     justify-content: center;
-    padding: 3rem 1rem;
+    padding: 2rem 1rem;
     width: 100%;
 }
 
@@ -85,7 +59,10 @@ body {
     box-shadow: 0 30px 60px rgba(0,0,0,0.6);
 }
 
-/* --- IMAGE SIDE LOGIC --- */
+.auth-form-side {
+    padding: 3rem;
+}
+
 .auth-image-side {
     background-size: cover;
     background-position: center;
@@ -104,135 +81,19 @@ body {
 
 .img-register {
     background-image: linear-gradient(rgba(0,0,0,0.2), rgba(0,0,0,0.8)),
-    url('https://images.unsplash.com/photo-1486406146926-c627a92ad1ab?q=80&w=1200&auto=format&fit=crop');
+    url('https://images.unsplash.com/photo-1486406146926-c627a92ad1ab?q=80&w=1200');
     min-height: 800px;
-}
-
-/* --- FORM & INPUTS --- */
-.auth-form-side {
-    padding: 3.5rem;
-}
-
-.form-label {
-    color: var(--text-label);
-    font-weight: 600;
-    margin-bottom: 0.5rem;
-    display: block;
-}
-
-.form-control, .form-select, textarea {
-    background-color: var(--input-bg) !important;
-    border: 2px solid #333 !important;
-    color: #fff !important;
-    padding: 0.85rem 1rem;
-    border-radius: 12px;
-}
-
-/* --- Styled Select & Options --- */
-
-.form-select {
-    /* Custom arrow for a modern look */
-    background-image: url("data:image/svg+xml,%3csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 16 16'%3e%3cpath fill='none' stroke='%23ffffff' stroke-linecap='round' stroke-linejoin='round' stroke-width='2' d='m2 5 6 6 6-6'/%3e%3c/svg%3e") !important;
-    background-position: right 1rem center !important;
-    background-repeat: no-repeat !important;
-    background-size: 16px 12px !important;
-    appearance: none; /* Removes the default OS arrow */
-    cursor: pointer;
-}
-
-/* Styling the dropdown list items */
-.form-select option {
-    background-color: var(--card-dark) !important; /* Matches your card bg */
-    color: #fff !important;
-    padding: 10px;
-}
-
-/* Focused state to remove the blue/orange glow */
-.form-select:focus {
-    border-color: var(--accent-purple) !important;
-    box-shadow: 0 0 0 0.25rem rgba(108, 92, 231, 0.25) !important;
-    outline: none;
-}
-
-.form-control::placeholder {
-    color: #aaaaaa !important;
-    opacity: 1;
-}
-
-/* --- VALIDATION STATES --- */
-.is-invalid {
-    border-color: var(--error-red) !important;
-    background-color: rgba(255, 107, 129, 0.05) !important;
-}
-
-.is-valid {
-    border-color: var(--success-green) !important;
-    background-color: rgba(46, 213, 115, 0.05) !important;
-}
-
-.error-text {
-    color: var(--error-red) !important;
-    font-size: 0.85rem;
-    font-weight: 600;
-    margin-top: 0.4rem;
-}
-
-.required-field::after {
-    content: " *";
-    color: var(--error-red);
-    font-weight: bold;
-}
-
-/* --- BUTTONS --- */
-.btn-primary {
-    background-color: var(--accent-purple) !important;
-    border: none !important;
-    padding: 1rem;
-    font-weight: 700;
-    border-radius: 12px;
-    transition: all 0.3s ease;
-}
-
-.btn-primary:hover {
-    background-color: var(--accent-hover) !important;
-}
-
-/* --- TEXTAREA LOCK --- */
-.fixed-textarea {
-    resize: none;
-    overflow-y: auto;
-    height: 120px;
-}
-
-.fixed-textarea::-webkit-scrollbar { width: 8px; }
-.fixed-textarea::-webkit-scrollbar-track { background: var(--bg-dark); }
-.fixed-textarea::-webkit-scrollbar-thumb { background: #3d3d45; border-radius: 10px; }
-.fixed-textarea::-webkit-scrollbar-thumb:hover { background: var(--accent-purple); }
-
-/* --- RELATIVE FOOTER SECTION --- */
-footer {
-    width: 100%;
-    padding: 0.5rem 0; /* More padding since it's relative now */
-    background-color: var(--bg-dark);
-    text-align: center;
-    color: #666;
-    font-size: 0.9rem;
-    border-top: 1px solid rgba(255, 255, 255, 0.05);
-    margin-top: auto; /* Ensures it stays at bottom even if content is short */
 }
 
 /* --- MOBILE RESPONSIVENESS --- */
 @media (max-width: 991px) {
-    :root {
-        --header-height: 130px;
-    }
     .brand-title {
-        font-size: 2.2rem;
+        font-size: 1.8rem;
+        letter-spacing: 2px;
     }
     .brand-tagline {
-        font-size: 0.9rem;
-        max-width: 280px;
-        margin-top: 0;
+        max-width: 240px;
+        font-size: 0.65rem;
     }
     .auth-image-side {
         display: none;
@@ -240,90 +101,4 @@ footer {
     .auth-form-side {
         padding: 2rem;
     }
-}
-
-/* Modal */
-/* --- RESPONSIVE INDUSTRIAL MODAL SYSTEM --- */
-
-/* Desktop Default: Fixed below header, pinned to top-right */
-.swal2-container.swal2-top-end {
-    position: fixed !important;
-    top: 110px !important;      /* Below your fixed header */
-    right: 20px !important;
-    left: auto !important;     /* Ensure it's not centered on desktop */
-    background: transparent !important;
-    z-index: 9999 !important;
-    width: auto !important;
-    display: flex !important;
-    justify-content: flex-end !important;
-}
-
-/* Base Rectangle Body */
-.industrial-toast {
-    box-shadow: 0 4px 15px rgba(0, 0, 0, 0.3) !important;
-    display: flex !important;
-    flex-direction: row !important;
-    align-items: center !important;
-    width: max-content !important;    
-    min-width: 350px !important;
-    max-width: 75vw !important;       
-    height: auto !important;
-    border-radius: 4px !important;
-    padding: 12px 20px !important;
-    color: #fff !important;
-    white-space: nowrap !important;   
-}
-
-/* --- MOBILE RESPONSIVENESS (Phone Logic) --- */
-@media (max-width: 600px) {
-    /* Change container to Top-Center */
-    .swal2-container.swal2-top-end {
-        top: 135px !important;      /* Increased to clear mobile header height */
-        right: 0 !important;
-        left: 0 !important;
-        justify-content: center !important; /* Centers the toast horizontally */
-        padding: 0 10px !important;
-    }
-
-    .industrial-toast {
-        width: 95vw !important;      /* Nearly full width on phone */
-        min-width: 0 !important;     /* Remove min-width for small screens */
-        max-width: 95vw !important;
-        white-space: normal !important; /* Allow text to wrap vertically */
-        text-align: center;
-        justify-content: center;
-        padding: 10px 15px !important;
-    }
-
-    .small-icon {
-        margin-right: 10px !important;
-        transform: scale(0.75) !important; /* Slightly smaller icon for mobile */
-    }
-}
-
-/* Dynamic State Colors */
-.success-toast { background-color: #28a745 !important; }
-.error-toast { background-color: #dc3545 !important; }
-.info-toast { background-color: #007bff !important; }
-
-/* Icon Settings */
-.small-icon {
-    transform: scale(0.85) !important;
-    margin-right: 15px !important;
-    flex-shrink: 0 !important;
-}
-
-.swal2-icon.swal2-error, .swal2-icon.swal2-success, .swal2-icon.swal2-info {
-    border-color: #fff !important;
-    margin: 0 !important;
-}
-
-.swal2-icon [class^='swal2-x-mark-line'],
-.swal2-icon [class^='swal2-success-line'],
-.swal2-icon::after, .swal2-icon::before {
-    background-color: #fff !important;
-}
-
-.swal2-timer-progress-bar {
-    background: rgba(255, 255, 255, 0.5) !important;
 }
