@@ -155,16 +155,17 @@ public class AuthService {
                     .orElseThrow(() -> new DomainException(
                             HttpStatus.UNAUTHORIZED,
                             "Authentication Failed",
-                            "login",
-                            "Invalid credentials")
+                            "identifier",
+                            "Invalid phone number or email")
                     );
+
 
             if (!passwordEncoder.matches(loginRequest.getPassword(), user.getPassword())) {
                 log.warn("!!!! [AUTH_LOGIN_FAIL] Incorrect password for: {}", identifier);
                 throw new DomainException(
                         HttpStatus.UNAUTHORIZED,
                         "Authentication Failed",
-                        "login",
+                        "password",
                         "Your password is incorrect"
                 );
             }
@@ -173,9 +174,9 @@ public class AuthService {
                 log.warn("!!!! [AUTH_LOGIN_CONFLICT] Active session exists for: {}", identifier);
                 throw new DomainException(
                         HttpStatus.CONFLICT,
-                        "Active Session Found",
+                        "Already logged in elsewhere",
                         "login",
-                        "Already logged in elsewhere"
+                        "Active Session Found"
                 );
             }
 
