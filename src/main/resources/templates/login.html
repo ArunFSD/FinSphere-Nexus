@@ -1,32 +1,30 @@
 <!DOCTYPE html>
 <html xmlns:th="http://www.thymeleaf.org"
-      th:replace="~{auth-layout :: auth-layout(~{:: #login-content})}">
+      th:replace="~{auth-layout :: auth-layout(~{:: #login-content}, 'img-login')}">
 <body id="login-content">
 <div class="mb-4">
-    <h2 class="fw-bold">Sign In</h2>
-    <p class="text-muted">Enter your credentials to access your account.</p>
+    <h1 class="fw-bold mb-0">Welcome Back</h1>
+    <p class="text-white-50">Sign in for your financial insights</p>
 </div>
 
-<form id="loginForm" th:object="${loginRequest}">
+<form id="loginForm" th:object="${loginRequest}" novalidate>
     <div class="mb-3">
-        <label class="form-label small fw-semibold text-uppercase">Identifier</label>
-        <input type="text" class="form-control" th:field="*{identifier}" placeholder="Email or Phone" required>
+        <label class="form-label required-field">Phone Number or Email</label>
+        <input type="text" class="form-control" name="identifier" placeholder="Enter your phone number or email">
     </div>
 
     <div class="mb-4">
         <div class="d-flex justify-content-between">
-            <label class="form-label small fw-semibold text-uppercase">Password</label>
-            <a th:href="@{/forgot-password}" class="small" style="color: var(--accent-purple);">Forgot?</a>
+            <label class="form-label required-field">Password</label>
+            <a th:href="@{/forgot-password}" class="text-decoration-none small" style="color: var(--accent-purple);">Forgot Password?</a>
         </div>
-        <input type="password" class="form-control" th:field="*{password}" placeholder="••••••••" required>
+        <input type="password" class="form-control" name="password" placeholder="Enter your password">
     </div>
 
-    <button type="submit" class="btn btn-primary w-100">Login to FinSphere</button>
+    <button type="submit" class="btn btn-primary w-100">Sign In</button>
 
     <div class="text-center mt-4">
-        <p class="small text-muted">New to our network?
-            <a th:href="@{/register}" class="fw-bold" style="color: var(--accent-purple);">Register Now</a>
-        </p>
+        <p class="text-white">Don't have an account? <a th:href="@{/register}" class="fw-bold text-decoration-none" style="color: var(--accent-purple);">Register Now</a></p>
     </div>
 </form>
 </body>

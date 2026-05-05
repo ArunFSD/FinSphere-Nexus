@@ -1,128 +1,251 @@
 /**
- * FinSphere Nexus - Auth Management
- * Handles Login and Registration via Gateway (7080)
+ * FinSphere Nexus - Validation Engine
+ * Synchronized with RegistrationRequest.java DTO
  */
 
+const rules = {
+    fullName: {
+        required: "Full name is mandatory",
+        pattern: /^[a-zA-Z\s]+$/,
+        patternMsg: "Full name can only contain letters and spaces",
+        max: 100,
+        maxMsg: "Full name must not exceed 100 characters"
+    },
+    phoneNumber: {
+        required: "Phone number is mandatory",
+        pattern: /^[6-9]\d{9}$/,
+        patternMsg: "Invalid phone number"
+    },
+    email: {
+        required: false, // Matches DTO (no @NotBlank)
+        email: true,
+        emailMsg: "Invalid email format",
+        max: 100,
+        maxMsg: "Email must not exceed 100 characters"
+    },
+    password: {
+        required: "Password is mandatory",
+        min: 8,
+        minMsg: "Password must be at least 8 characters",
+        max: 30,
+        maxMsg: "Password must not exceed 30 characters"
+    },
+    address: {
+        required: "Address is mandatory",
+        max: 500,
+        maxMsg: "Address must not exceed 500 characters"
+    },
+    careOf: {
+        required: false, // Matches DTO
+        pattern: /^[a-zA-Z\s]*$/,
+        patternMsg: "Care of (C/O) can only contain letters and spaces",
+        max: 100,
+        maxMsg: "Care of (C/O) must not exceed 100 characters"
+    },
+    role: {
+        required: "Role is mandatory",
+        pattern: /^(CUSTOMER|ADMIN)$/,
+        patternMsg: "Role must be either CUSTOMER or ADMIN"
+    },
+    identifier: {
+        required: "Phone number or email is mandatory"
+    }
+};
+
 document.addEventListener('DOMContentLoaded', () => {
-    const loginForm = document.getElementById('loginForm');
-    const registerForm = document.getElementById('registerForm');
+    const authForm = document.querySelector('form');
+    if (!authForm) return;
 
-    // --- LOGIN HANDLER ---
-    if (loginForm) {
-        loginForm.addEventListener('submit', async (e) => {
-            e.preventDefault();
+    authForm.addEventListener('submit', async (e) => {
+        e.preventDefault();
 
-            const submitBtn = loginForm.querySelector('button[type="submit"]');
-            const originalBtnText = submitBtn.innerHTML;
-
-            // Extract Data
-            const formData = {
-                identifier: document.querySelector('input[name="identifier"]').value,
-                password: document.querySelector('input[name="password"]').value
-            };
-
-            try {
-                setLoading(submitBtn, true);
-
-                // Note: Calling /auth/login on the Gateway (Current Port 7080)
-                const response = await fetch('/auth/login', {
-                    method: 'POST',
-                    headers: { 'Content-Type': 'application/json' },
-                    body: JSON.stringify(formData)
-                });
-
-                const result = await response.json();
-
-                if (response.ok && result.success) {
-                    showToast('Success! Redirecting...', 'success');
-                    // Redirect to dashboard or home after successful login
-                    setTimeout(() => window.location.href = '/', 1000);
-                } else {
-                    showToast(result.message || 'Login Failed', 'danger');
-                }
-            } catch (error) {
-                console.error("Auth Error:", error);
-                showToast('Server connection failed', 'danger');
-            } finally {
-                setLoading(submitBtn, false, originalBtnText);
-            }
+        // 1. Validation Logic...
+        const inputs = authForm.querySelectorAll('input, select, textarea');
+        let isFormValid = true;
+        inputs.forEach(input => {
+            if (!validateField(input)) isFormValid = false;
         });
-    }
+        if (!isFormValid) return;
 
-    // --- REGISTRATION HANDLER ---
-    if (registerForm) {
-        registerForm.addEventListener('submit', async (e) => {
-            e.preventDefault();
+        // 2. Prepare Request
+        const submitBtn = authForm.querySelector('button[type="submit"]');
+        const originalBtnText = submitBtn.innerText;
+        const formData = Object.fromEntries(new FormData(authForm));
+        const endpoint = '/auth/register';
 
-            const submitBtn = registerForm.querySelector('button[type="submit"]');
-            const originalBtnText = submitBtn.innerHTML;
+        try {
+            toggleLoading(submitBtn, true, originalBtnText);
 
-            // Extract Data using the th:field names from your DTO
-            const formData = {
-                fullName: document.querySelector('input[name="fullName"]').value,
-                phoneNumber: document.querySelector('input[name="phoneNumber"]').value,
-                email: document.querySelector('input[name="email"]').value,
-                password: document.querySelector('input[name="password"]').value,
-                address: document.querySelector('textarea[name="address"]').value,
-                careOf: document.querySelector('input[name="careOf"]').value,
-                role: document.querySelector('select[name="role"]').value
-            };
+            const response = await fetch(endpoint, {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify(formData)
+            });
 
-            try {
-                setLoading(submitBtn, true);
+            const result = await response.json();
 
-                const response = await fetch('/auth/register', {
-                    method: 'POST',
-                    headers: { 'Content-Type': 'application/json' },
-                    body: JSON.stringify(formData)
+            // 3. Handle Success
+            if (response.status === 201 || result.success) {
+                notify.success(result.message || "Account successfully created");
+
+                // INDUSTRIAL WAY: Instead of a blind setTimeout, 
+                // we use the promise returned by the Toast to redirect 
+                // ONLY after the notification is dismissed (either by timer or close).
+                Toast.fire({
+                    icon: 'success',
+                    title: result.message || "Account successfully created",
+                    customClass: { popup: 'industrial-toast success-toast', icon: 'small-icon' }
+                }).then((result) => {
+                    // Redirect once the toast disappears
+                    window.location.href = '/login';
                 });
-
-                const result = await response.json();
-
-                if (response.ok && result.success) {
-                    showToast('Registration Successful! Please login.', 'success');
-                    setTimeout(() => window.location.href = '/login', 2000);
-                } else {
-                    showToast(result.message || 'Registration failed', 'danger');
-                }
-            } catch (error) {
-                console.error("Auth Error:", error);
-                showToast('Unable to reach auth service', 'danger');
-            } finally {
-                setLoading(submitBtn, false, originalBtnText);
             }
-        });
-    }
+            // 4. Handle Errors
+            else if (response.status === 400 && result.errors) {
+                Object.keys(result.errors).forEach(fieldName => {
+                    const input = authForm.querySelector(`[name="${fieldName}"]`);
+                    showError(input, result.errors[fieldName]);
+                });
+                notify.error("Invalid details! Please check and try again");
+            }
+            else {
+                notify.error(result.message || "Registration Failed");
+            }
+
+        } catch (err) {
+            notify.error("Connection error! We are unable to reach the server at this time");
+        } finally {
+            toggleLoading(submitBtn, false, originalBtnText);
+        }
+    });
 });
 
 /**
- * Utility: UI Loading State
+ * Core Validation Engine
  */
-function setLoading(button, isLoading, originalText = '') {
-    if (isLoading) {
-        button.disabled = true;
-        button.innerHTML = `<span class="spinner-border spinner-border-sm" role="status" aria-hidden="true"></span> Processing...`;
-    } else {
-        button.disabled = false;
-        button.innerHTML = originalText;
+function validateField(input) {
+    const fieldName = input.name;
+    const value = input.value.trim();
+    const rule = rules[fieldName];
+
+    if (!rule) return true;
+
+    // 1. Mandatory Check (FirstOrder)
+    if (rule.required && !value) {
+        return showError(input, rule.required);
     }
+
+    // 2. Skip remaining checks if optional field is empty (Email, CareOf)
+    if (!rule.required && !value) {
+        return showSuccess(input);
+    }
+
+    // 3. Minimum Length Check (SecondOrder)
+    if (rule.min && value.length < rule.min) {
+        return showError(input, rule.minMsg);
+    }
+
+    // 4. Maximum Length Check (ThirdOrder)
+    if (rule.max && value.length > rule.max) {
+        return showError(input, rule.maxMsg);
+    }
+
+    // 5. Pattern/Regex Check (SecondOrder)
+    if (rule.pattern && !rule.pattern.test(value)) {
+        return showError(input, rule.patternMsg);
+    }
+
+    // 6. Email Specific Format (SecondOrder)
+    if (rule.email && !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(value)) {
+        return showError(input, rule.emailMsg);
+    }
+
+    return showSuccess(input);
+}
+
+function showError(input, message) {
+    if (!input) return false;
+    input.classList.remove('is-valid');
+    input.classList.add('is-invalid');
+
+    let errorDiv = input.parentElement.querySelector('.error-text');
+    if (!errorDiv) {
+        errorDiv = document.createElement('div');
+        errorDiv.className = 'error-text';
+        input.parentElement.appendChild(errorDiv);
+    }
+    errorDiv.innerText = message;
+    return false;
+}
+
+function showSuccess(input) {
+    input.classList.remove('is-invalid');
+    input.classList.add('is-valid');
+    const errorDiv = input.parentElement.querySelector('.error-text');
+    if (errorDiv) errorDiv.innerText = '';
+    return true;
+}
+
+function toggleLoading(btn, isLoading, originalText) {
+    btn.disabled = isLoading;
+    btn.innerHTML = isLoading ?
+        '<span class="spinner-border spinner-border-sm"></span> Processing...' :
+        originalText;
 }
 
 /**
- * Utility: Quick Notification (Bootstrap-style alerts)
- * You can replace this with a proper Toast library like SweetAlert2 or Toastify later.
+ * FinSphere Nexus Notification System
+ * Feature: Hover to pause, Dynamic Colors, Auto-redirect
  */
-function showToast(message, type) {
-    const alertBox = document.createElement('div');
-    alertBox.className = `alert alert-${type} position-fixed top-0 start-50 translate-middle-x mt-3 shadow-lg`;
-    alertBox.style.zIndex = "9999";
-    alertBox.style.minWidth = "300px";
-    alertBox.innerText = message;
+const Toast = Swal.mixin({
+    toast: true,
+    position: 'top-end', // Stays 'top-end' here; CSS media queries handle mobile centering
+    showConfirmButton: false,
+    timer: 4000,
+    timerProgressBar: true,
+    // INTERFACE: Pause timer on hover
+    didOpen: (toast) => {
+        toast.addEventListener('mouseenter', Swal.stopTimer);
+        toast.addEventListener('mouseleave', Swal.resumeTimer);
+    }
+});
 
-    document.body.appendChild(alertBox);
+const notify = {
+    /**
+     * Success Notification
+     * @param {string} msg - Message to display
+     * @returns {Promise} - Resolves when toast is closed
+     */
+    success: (msg) => Toast.fire({ 
+        icon: 'success', 
+        title: msg,
+        customClass: { 
+            popup: 'industrial-toast success-toast', 
+            icon: 'small-icon' 
+        } 
+    }),
 
-    setTimeout(() => {
-        alertBox.style.opacity = '0';
-        setTimeout(() => alertBox.remove(), 500);
-    }, 3000);
-}
+    /**
+     * Error Notification
+     */
+    error: (msg) => Toast.fire({ 
+        icon: 'error', 
+        title: msg,
+        customClass: { 
+            popup: 'industrial-toast error-toast', 
+            icon: 'small-icon' 
+        } 
+    }),
+
+    /**
+     * Info Notification
+     */
+    info: (msg) => Toast.fire({ 
+        icon: 'info', 
+        title: msg,
+        customClass: { 
+            popup: 'industrial-toast info-toast', 
+            icon: 'small-icon' 
+        } 
+    })
+};
