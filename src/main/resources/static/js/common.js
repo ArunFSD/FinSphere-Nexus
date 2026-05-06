@@ -3,7 +3,7 @@
  * Shared across all modules
  */
 
-//  NOTIFICATION SYSTEM
+// --- NOTIFICATION SYSTEM ---
 const Toast = Swal.mixin({
     toast: true,
     position: 'top-end',
@@ -17,17 +17,20 @@ const Toast = Swal.mixin({
 });
 
 const notify = {
-    success: (msg) => Toast.fire({ 
-        icon: 'success', title: msg,
-        customClass: { popup: 'industrial-toast success-toast', icon: 'small-icon' } 
+    success: (msg) => Toast.fire({
+        icon: 'success',
+        title: msg,
+        customClass: { popup: 'industrial-toast success-toast', icon: 'small-icon' }
     }),
-    error: (msg) => Toast.fire({ 
-        icon: 'error', title: msg,
-        customClass: { popup: 'industrial-toast error-toast', icon: 'small-icon' } 
+    error: (msg) => Toast.fire({
+        icon: 'error',
+        title: msg,
+        customClass: { popup: 'industrial-toast error-toast', icon: 'small-icon' }
     }),
-    info: (msg) => Toast.fire({ 
-        icon: 'info', title: msg,
-        customClass: { popup: 'industrial-toast info-toast', icon: 'small-icon' } 
+    info: (msg) => Toast.fire({
+        icon: 'info',
+        title: msg,
+        customClass: { popup: 'industrial-toast info-toast', icon: 'small-icon' }
     }),
     successAndRedirect: (msg, url) => {
         sessionStorage.setItem('pendingSuccess', msg);
@@ -35,7 +38,7 @@ const notify = {
     }
 };
 
-//  FORM STATE HELPERS
+// --- FORM STATE HELPERS ---
 function showError(input, message) {
     if (!input) return false;
     input.classList.remove('is-valid');
@@ -68,7 +71,19 @@ function toggleLoading(btn, isLoading, originalText) {
         originalText;
 }
 
-//  PERSISTENCE CHECKER
+/**
+ * Common Error Parser
+ * Dynamically maps backend error maps to frontend inputs
+ */
+function applyFieldErrors(form, errors) {
+    if (!errors) return;
+    Object.keys(errors).forEach(key => {
+        const input = form.querySelector(`[name="${key}"]`);
+        if (input) showError(input, errors[key]);
+    });
+}
+
+// --- PERSISTENCE CHECKER ---
 document.addEventListener('DOMContentLoaded', () => {
     const pendingMsg = sessionStorage.getItem('pendingSuccess');
     if (pendingMsg) {

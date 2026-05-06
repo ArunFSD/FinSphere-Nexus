@@ -21,7 +21,7 @@ document.addEventListener('DOMContentLoaded', () => {
     authForm.addEventListener('submit', async (e) => {
         e.preventDefault();
 
-        // Validate Fields
+        // 1. Validate Fields
         const inputs = authForm.querySelectorAll('input, select, textarea');
         let isFormValid = true;
         inputs.forEach(input => {
@@ -29,7 +29,7 @@ document.addEventListener('DOMContentLoaded', () => {
         });
         if (!isFormValid) return;
 
-        // Configuration
+        // 2. Configuration
         const isLoginPage = window.location.pathname.includes('login');
         const endpoint = isLoginPage ? '/auth/login' : '/auth/register';
         const submitBtn = authForm.querySelector('button[type="submit"]');
@@ -39,6 +39,7 @@ document.addEventListener('DOMContentLoaded', () => {
         try {
             toggleLoading(submitBtn, true, originalBtnText);
 
+            // 3. API Call
             const response = await fetch(endpoint, {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
@@ -47,11 +48,14 @@ document.addEventListener('DOMContentLoaded', () => {
 
             const result = await response.json();
 
+            // 4. Handle Success
             if (response.ok && result.success) {
-                const target = isLoginPage ? `/${result.data.role.toLowerCase()}/dashboard` : '/login';
+                const target = isLoginPage ? `/${result.data.role.toUpperCase()}/dashboard` : '/login';
                 const msg = isLoginPage ? "Login successful! Welcome back." : (result.message || "Account created!");
                 notify.successAndRedirect(msg, target);
-            } else {
+            } 
+            // 5. Handle Errors
+            else {
                 handleAuthErrors(response.status, result, authForm);
             }
 
@@ -71,6 +75,7 @@ function validateAuthField(input) {
     if (!rule) return true;
 
     const val = input.value.trim();
+    
     if (rule.required && !val) return showError(input, rule.required);
     if (!rule.required && !val) return showSuccess(input);
     if (rule.min && val.length < rule.min) return showError(input, rule.minMsg);
@@ -83,19 +88,14 @@ function validateAuthField(input) {
 
 /**
  * Maps Backend status codes to UI feedback
+ * Uses commonized applyFieldErrors for dynamic mapping
  */
 function handleAuthErrors(status, result, form) {
     if (status === 400 && result.errors) {
-        Object.keys(result.errors).forEach(key => {
-            const input = form.querySelector(`[name="${key}"]`);
-            showError(input, result.errors[key]);
-        });
+        applyFieldErrors(form, result.errors);
         notify.error("Invalid details provided.");
     } else if (status === 401 || status === 409) {
-        Object.keys(result.errors).forEach(key => {
-            const input = form.querySelector(`[name="${key}"]`);
-            showError(input, result.errors[key]);
-        });
+        applyFieldErrors(form, result.errors);
         notify.error(result.message || "Authentication failed.");
     } else {
         notify.error(result.message || "Unexpected error occurred.");
