@@ -9,8 +9,12 @@ public class WebConfig implements WebMvcConfigurer {
 
     @Override
     public void addResourceHandlers(ResourceHandlerRegistry registry) {
-        // Ensures that /js/**, /css/**, and /assets/** are served correctly
+        // Standard static mapping
         registry.addResourceHandler("/static/**")
+                .addResourceLocations("classpath:/static/");
+
+        // Handle root-level resources (favicon, robots.txt, etc.)
+        registry.addResourceHandler("/**")
                 .addResourceLocations("classpath:/static/");
     }
 }
