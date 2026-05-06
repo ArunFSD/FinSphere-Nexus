@@ -38,4 +38,9 @@ public class SecurityUtils {
         Claims claims = getClaims();
         return claims != null ? claims.getSubject() : null;
     }
+
+    public String getCurrentUserRole() {
+        Claims claims = getClaims();
+        return claims != null ? claims.get("role", String.class) : null;
+    }
 }
