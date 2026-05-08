@@ -1,4 +1,3 @@
-# application.yml
 eureka:
   client:
     service-url:
@@ -13,9 +12,9 @@ finsphere:
     secret: "YourVeryLongSuperSecretKeyForFinSphereNexus2026!!"
     expirationMs: 86400000
   security:
-    # This must be a 32-character string for 256-bit encryption
-    encryption-key: "F1nSph3r3_N3xu5_S3cur1ty_K3y_2026"
-    # Use a random 12-byte IV for GCM
+    # 32 characters exactly. No quotes, no spaces.
+    encryption-key: F1nSph3r3_N3xu5_S3cur1ty_K3y_026
+    # 12 bytes is the NIST recommendation for AES-GCM
     iv-length: 12
 
 spring:
@@ -30,7 +29,7 @@ management:
   endpoints:
     web:
       exposure:
-        include: "health,info,prometheus,metrics"
+        include: health,info,prometheus,metrics
   endpoint:
     health:
       show-details: always
