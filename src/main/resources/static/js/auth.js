@@ -51,7 +51,7 @@ document.addEventListener('DOMContentLoaded', () => {
             // 4. Handle Success
             if (response.ok && result.success) {
                 const target = isLoginPage ? '/dashboard' : '/login';
-                const msg = isLoginPage ? "Login successful! Welcome back." : (result.message || "Account created!");
+                const msg = isLoginPage ? "Login successful" : (result.message || "Account created!");
                 notify.successAndRedirect(msg, target);
             } 
             // 5. Handle Errors
