@@ -30,6 +30,7 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
             for (Cookie cookie : request.getCookies()) {
                 if ("fsn_auth_token".equals(cookie.getName())) { // Match your cookie name
                     token = cookie.getValue();
+                    break;
                 }
             }
         }
@@ -46,5 +47,15 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
         }
 
         filterChain.doFilter(request, response);
+    }
+
+    @Override
+    protected boolean shouldNotFilter(HttpServletRequest request) {
+        String path = request.getServletPath();
+        // Skip security logic for these specific paths
+        return path.startsWith("/static/") ||
+                path.equals("/favicon.ico") ||
+                path.equals("/login") ||
+                path.equals("/register");
     }
 }
