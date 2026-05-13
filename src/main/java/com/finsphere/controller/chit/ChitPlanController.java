@@ -10,6 +10,9 @@ import com.finsphere.service.chit.ChitPlanService;
 import jakarta.servlet.http.HttpServletRequest;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
+import org.springframework.data.web.PageableDefault;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.validation.annotation.Validated;
@@ -18,7 +21,7 @@ import org.springframework.web.bind.annotation.*;
 import java.util.List;
 
 @RestController
-@RequestMapping(ApiConstants.PLANS) // Base mapping for the whole project
+@RequestMapping(ApiConstants.PLANS)
 @RequiredArgsConstructor
 @Slf4j
 public class ChitPlanController {
@@ -38,11 +41,12 @@ public class ChitPlanController {
     }
 
     @GetMapping("/active")
-    public ResponseEntity<ApiResponse<List<ChitPlan>>> getActivePlans(
-            HttpServletRequest httpServletRequest
+    public ResponseEntity<ApiResponse<Page<ChitPlan>>> getActivePlans(
+            @PageableDefault(size = 10) Pageable pageable,
+            HttpServletRequest request
     ) throws Exception {
-        log.info(">>>> [CHIT_API_HIT] GET /chits/plans/active | IP: {}", httpServletRequest.getRemoteAddr());
-        ApiResponse<List<ChitPlan>> response = planService.getAllActivePlans();
+        log.info(">>>> [CHIT_ACTIVE] GET /chits/plans/active | IP: {}", request.getRemoteAddr());
+        ApiResponse<Page<ChitPlan>> response = planService.getAllActivePlans(pageable);
         return ResponseEntity.status(response.getStatus()).body(response);
     }
 }

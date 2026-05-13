@@ -9,6 +9,8 @@ import com.finsphere.repository.jpa.ChitMonthlyCycleRepository;
 import com.finsphere.repository.jpa.ChitPlanRepository;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
 import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -90,13 +92,13 @@ public class ChitPlanService {
     }
 
     @Transactional(readOnly = true)
-    public ApiResponse<List<ChitPlan>> getAllActivePlans() {
-        log.info(">>>> [CHIT_PLAN_FETCH_ACTIVE] Requested by: {}", securityUtils.getCurrentUserFullName());
-        List<ChitPlan> plans = planRepository.findByIsActiveTrue();
-        return ApiResponse.<List<ChitPlan>>builder()
+    public ApiResponse<Page<ChitPlan>> getAllActivePlans(Pageable pageable) {
+        log.info(">>>> [CHIT_PLAN_FETCH_ACTIVE] Paginated request by: {}", securityUtils.getCurrentUserFullName());
+        Page<ChitPlan> plans = planRepository.findByIsActiveTrue(pageable);
+        return ApiResponse.<Page<ChitPlan>>builder()
                 .success(true)
                 .status(HttpStatus.OK.value())
-                .message("Successfully retrieved " + plans.size() + " active plans")
+                .message("Retrieved page " + plans.getNumber() + " of active plans")
                 .data(plans)
                 .timestamp(LocalDateTime.now())
                 .build();
