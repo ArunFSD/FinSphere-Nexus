@@ -9,11 +9,15 @@ public class WebConfig implements WebMvcConfigurer {
 
     @Override
     public void addResourceHandlers(ResourceHandlerRegistry registry) {
-        // Standard static mapping
+        // 1. Standard static mapping for CSS/JS
         registry.addResourceHandler("/static/**")
                 .addResourceLocations("classpath:/static/");
 
-        // Handle root-level resources (favicon, robots.txt, etc.)
+        // 2. Fixed Favicon mapping - point to the static folder directly
+        registry.addResourceHandler("/favicon.ico")
+                .addResourceLocations("classpath:/static/");
+
+        // 3. Keep this as a fallback for root resources
         registry.addResourceHandler("/**")
                 .addResourceLocations("classpath:/static/");
     }

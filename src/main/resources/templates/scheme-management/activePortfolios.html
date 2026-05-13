@@ -1,0 +1,53 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title th:text="${title + ' | FinSphere Nexus'}"></title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <link rel="stylesheet" th:href="@{/css/style.css}">
+    <link rel="stylesheet" th:href="@{/css/dashboard-style.css}">
+</head>
+<body class="dashboard-body">
+
+    <!-- Header Fragment handles dynamic breadcrumbs via title attribute -->
+    <div th:replace="~{fragments/header :: nexusHeader(${title})}"></div>
+
+    <main class="dashboard-main" style="display: block; padding: 40px clamp(20px, 5vw, 100px);">
+        <header class="section-header" style="margin-bottom: 20px;">
+            <h2 style="font-weight: 800; letter-spacing: -0.5px;">Scheme Portfolio Management</h2>
+        </header>
+
+        <div class="table-container">
+            <table class="nexus-table">
+                <thead>
+                    <tr>
+                        <th>Scheme</th>
+                        <th>Total Value</th>
+                        <th>Monthly</th>
+                        <th>Period</th>
+                        <th>Members</th>
+                        <th>Starts</th>
+                        <th>Status</th>
+                        <th>Actions</th>
+                    </tr>
+                </thead>
+                <tbody id="schemeTableBody">
+                    <!-- Dynamic Rows -->
+                </tbody>
+            </table>
+
+            <footer class="pagination-box">
+                <!-- Empty by default, populated by JS -->
+                <div class="page-info text-muted" id="pageInfo"></div>
+                <div class="page-nav" id="paginationNav"></div>
+            </footer>
+        </div>
+    </main>
+
+    <div th:replace="~{fragments/footer :: nexusFooter}"></div>
+    
+    <script th:src="@{/js/common.js}"></script>
+    <script th:src="@{/js/schemes.js}"></script>
+</body>
+</html>

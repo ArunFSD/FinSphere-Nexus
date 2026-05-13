@@ -117,13 +117,28 @@ body {
 /* --- FOOTER --- */
 footer {
     width: 100%;
-    padding: 0.3rem 0;
-    background-color: var(--bg-dark);
+    padding: 0.3rem 0; /* Balanced padding for all pages */
+    background-color: var(--bg-dark); /* Uses your root variable */
     text-align: center;
     color: #666;
-    font-size: 0.9rem;
+    font-size: 0.85rem;
     border-top: 1px solid rgba(255, 255, 255, 0.05);
-    margin-top: auto;
+    margin-top: auto; /* Keeps footer at bottom of flex containers */
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 5px;
+    letter-spacing: 0.5px;
+}
+
+footer p {
+    margin: 0;
+}
+
+/* Optional: Subtle hover effect for the text */
+footer:hover {
+    color: #888;
+    transition: color 0.3s ease;
 }
 
 /* --- NOTIFICATION SYSTEM (Toast) --- */

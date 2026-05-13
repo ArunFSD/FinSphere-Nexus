@@ -4,9 +4,7 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Dashboard | FinSphere Nexus</title>
-    <!-- Font Awesome -->
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
-    <!-- Google Fonts -->
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700;800&display=swap" rel="stylesheet">
     
     <link rel="stylesheet" th:href="@{/css/style.css}">
@@ -14,67 +12,72 @@
 </head>
 <body class="dashboard-body">
 
-<header class="dashboard-nav">
-    <div class="brand-group">
-        <h1 class="brand-title">FinSphere Nexus</h1>
-        <div class="brand-tagline">
-            <span>Secure</span>
-            <span style="color: #f3d43b;">★</span>
-            <span>Smart</span>
-            <span style="color: #f3d43b;">★</span>
-            <span>Seamless</span>
-        </div>
-    </div>
+    <div th:replace="~{fragments/header :: nexusHeader('DASHBOARD')}"></div>
 
-    <div class="header-right-actions">
-        <div class="user-profile-box">
-            <i class="fa-solid fa-circle-user profile-icon"></i>
-            <div class="user-text">
-                <!-- Cleaner Welcome Message -->
-                <span class="welcome-msg">Welcome, Arun</span>
+    <main class="dashboard-main">
+        <div class="grid-layout">
+            <div class="dash-card">
+                <div class="card-content">
+                    <div class="card-icon"><i class="fa-solid fa-layer-group"></i></div>
+                    <h3>SCHEME MANAGEMENT</h3>
+                    <p>Manage and view distributed chit funds</p>
+                </div>
+                <div class="card-overlay">
+                    <ul class="sub-menu">
+                        <li><a href="/schemes/active"><i class="fa-solid fa-folder-open"></i> Active Portfolios</a></li>
+                        <li><a href="/schemes/new"><i class="fa-solid fa-plus"></i> Initialize New Scheme</a></li>
+                        <li><a href="/schemes/ledger"><i class="fa-solid fa-book"></i> Monthly Ledger</a></li>
+                        <li><a href="/schemes/auction"><i class="fa-solid fa-gavel"></i> Bidding & Auctions</a></li>
+                    </ul>
+                </div>
+            </div>
+
+            <div class="dash-card">
+                <div class="card-content">
+                    <div class="card-icon"><i class="fa-solid fa-chart-line"></i></div>
+                    <h3>TREASURY & GROWTH</h3>
+                    <p>Wealth management and growth tracking</p>
+                </div>
+                <div class="card-overlay">
+                    <ul class="sub-menu">
+                        <li><a href="/finance/overview"><i class="fa-solid fa-eye"></i> Financial Overview</a></li>
+                        <li><a href="/finance/allocate"><i class="fa-solid fa-hand-holding-dollar"></i> Capital Allocation</a></li>
+                    </ul>
+                </div>
+            </div>
+
+            <div th:if="${userRole == 'ADMIN'}" class="dash-card">
+                <div class="card-content">
+                    <div class="card-icon"><i class="fa-solid fa-user-plus"></i></div>
+                    <h3>ADMINISTRATION</h3>
+                    <p>Onboard and manage platform members</p>
+                </div>
+                <div class="card-overlay">
+                    <ul class="sub-menu">
+                        <li><a href="/users/manage"><i class="fa-solid fa-users-gear"></i> User Management</a></li>
+                        <li><a href="/users/roles"><i class="fa-solid fa-shield-halved"></i> Role Permissions</a></li>
+                    </ul>
+                </div>
+            </div>
+
+            <div class="dash-card">
+                <div class="card-content">
+                    <div class="card-icon"><i class="fa-solid fa-credit-card"></i></div>
+                    <h3>PAYMENT HUB</h3>
+                    <p>Collect installments and process payouts</p>
+                </div>
+                <div class="card-overlay">
+                    <ul class="sub-menu">
+                        <li><a href="/payments/collect"><i class="fa-solid fa-money-bill-transfer"></i> Installment Collection</a></li>
+                        <li><a href="/payments/payouts"><i class="fa-solid fa-receipt"></i> Process Payouts</a></li>
+                    </ul>
+                </div>
             </div>
         </div>
-        <button class="logout-minimal-btn" onclick="handleLogout()">
-            <i class="fa-solid fa-power-off"></i>
-            <span>Logout</span>
-        </button>
-    </div>
-</header>
+    </main>
 
-<main class="dashboard-main">
-    <div class="grid-layout">
-        <div class="dash-card" onclick="location.href='/schemes'">
-            <div class="card-icon"><i class="fa-solid fa-layer-group"></i></div>
-            <h3>CHIT SCHEMES</h3>
-            <p>Manage and view distributed chit funds.</p>
-        </div>
 
-        <div class="dash-card" onclick="location.href='/finance'">
-            <div class="card-icon"><i class="fa-solid fa-chart-line"></i></div>
-            <h3>FINANCE</h3>
-            <p>Wealth management and growth tracking.</p>
-        </div>
-
-        <div th:if="${userRole == 'ADMIN'}" class="dash-card" onclick="location.href='/users/manage'">
-            <div class="card-icon"><i class="fa-solid fa-user-plus"></i></div>
-            <h3>ADD USERS</h3>
-            <p>Onboard new members to the platform.</p>
-        </div>
-
-        <div class="dash-card" onclick="location.href='/payments'">
-            <div class="card-icon"><i class="fa-solid fa-credit-card"></i></div>
-            <h3>PAYMENTS</h3>
-            <p>Collect installments and process payouts.</p>
-        </div>
-    </div>
-</main>
-
-<footer>
-    &copy; 2026 FinSphere Nexus Financial Solutions
-</footer>
-
-<script>
-    function handleLogout() { window.location.href = '/logout'; }
-</script>
+    <!-- Fragment Footer -->
+    <div th:replace="~{fragments/footer :: nexusFooter}"></div>
 </body>
 </html>
