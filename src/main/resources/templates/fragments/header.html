@@ -1,0 +1,46 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+    <header th:fragment="nexusHeader(title)" class="dashboard-nav">
+        <!-- Back Button: Only shows if NOT on Dashboard -->
+        <div class="nav-left-section">
+            <button th:if="${title != 'DASHBOARD'}" 
+                    class="back-nav-btn" 
+                    onclick="handleBack()">
+                <i class="fa-solid fa-arrow-left"></i>
+            </button>
+
+            <div class="brand-group">
+                <h1 class="brand-title">FinSphere Nexus</h1>
+                <div class="brand-tagline">
+                    <span>Secure</span>
+                    <span class="tag-star">★</span>
+                    <span>Smart</span>
+                    <span class="tag-star">★</span>
+                    <span>Seamless</span>
+                </div>
+            </div>
+        </div>
+
+        <!-- Breadcrumb / Screen Indicator -->
+        <div class="screen-indicator">
+            <div class="breadcrumb-container">
+                <a href="/dashboard" class="breadcrumb-item">DASHBOARD</a>
+                <th:block th:if="${title != 'DASHBOARD'}">
+                    <span class="breadcrumb-separator">/</span>
+                    <a th:href="${currentUri}" class="breadcrumb-item active" th:text="${title}"></a>                
+                </th:block>
+            </div>
+        </div>
+
+        <div class="header-right-actions">
+            <div class="user-profile-box">
+                <i class="fa-solid fa-circle-user profile-icon"></i>
+                <span class="welcome-msg" th:text="${'Welcome, ' + (userName != null ? userName : 'User')}"></span>      
+            </div>
+            <button class="logout-minimal-btn" onclick="handleLogout()">
+                <i class="fa-solid fa-power-off"></i>
+                <span class="logout-text">Logout</span>
+            </button>
+        </div>
+    </header>
+</html>
