@@ -3,7 +3,7 @@
  */
 const SCHEME_API = {
     pageSize: 10,
-    url: '/chits/plans/active'
+    url: '/fsn/schemes/active'
 };
 
 document.addEventListener('DOMContentLoaded', () => fetchSchemes(0));
@@ -15,15 +15,15 @@ async function fetchSchemes(page = 0) {
         const response = await fetch(`${SCHEME_API.url}?page=${page}&size=${SCHEME_API.pageSize}`);
         const result = await response.json();
         
-        if (result.success && result.data.content.length > 0) {
+        if (result.success && result.data && result.data.content && result.data.content.length > 0) {
             renderSchemeRows(result.data.content);
             renderPagination(result.data, 'fetchSchemes');
         } else {
-            // This will now trigger the glow-up and hide the footer
-            updateTableStatus('schemeTableBody', 'No records found');
+            updateTableStatus('schemeTableBody', 'No active records found in the database.');
             renderPagination(null, ''); 
         }
     } catch (error) {
+        console.error("Fetch Error:", error);
         updateTableStatus('schemeTableBody', 'Unable to connect to FinSphere Services.', true);
         renderPagination(null, '');
     }

@@ -12,6 +12,14 @@ import org.springframework.web.bind.annotation.GetMapping;
 public class UserInterfaceController {
 
     /**
+     * Default Landing Page - Redirects to Login.
+     */
+    @GetMapping("/")
+    public String index() {
+        return "redirect:/login";
+    }
+
+    /**
      * Serves the Login Page with an empty LoginRequest DTO.
      */
     @GetMapping("/login")
@@ -38,13 +46,5 @@ public class UserInterfaceController {
     public String showForgotPasswordPage() {
         log.info(">>>> [UI_NAV] Navigating to Forgot Password");
         return "forgot-password";
-    }
-
-    /**
-     * Default Landing Page - Redirects to Login.
-     */
-    @GetMapping("/")
-    public String index() {
-        return "redirect:/login";
     }
 }

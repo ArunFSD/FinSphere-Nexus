@@ -31,7 +31,10 @@ document.addEventListener('DOMContentLoaded', () => {
 
         // 2. Configuration
         const isLoginPage = window.location.pathname.includes('login');
-        const endpoint = isLoginPage ? '/auth/login' : '/auth/register';
+        
+        // UPDATED: Pointing to the Frontend Proxy instead of direct Auth Service
+        const endpoint = isLoginPage ? '/fsn/login' : '/fsn/register';
+        
         const submitBtn = authForm.querySelector('button[type="submit"]');
         const originalBtnText = submitBtn.innerText;
         const formData = Object.fromEntries(new FormData(authForm));
@@ -95,7 +98,7 @@ function handleAuthErrors(status, result, form) {
         applyFieldErrors(form, result.errors);
         notify.error("Invalid details provided.");
     } else if (status === 401 || status === 409) {
-        applyFieldErrors(form, result.errors);
+        applyFieldErrors(form, result.errors || {});
         notify.error(result.message || "Authentication failed.");
     } else {
         notify.error(result.message || "Unexpected error occurred.");

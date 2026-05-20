@@ -10,44 +10,94 @@
 </head>
 <body class="dashboard-body">
 
-    <!-- Header Fragment handles dynamic breadcrumbs via title attribute -->
-    <div th:replace="~{fragments/header :: nexusHeader(${title})}"></div>
+<div th:replace="~{fragments/header :: nexusHeader(${title})}"></div>
 
-    <main class="dashboard-main" style="display: block; padding: 40px clamp(20px, 5vw, 100px);">
-        <header class="section-header" style="margin-bottom: 20px;">
-            <h2 style="font-weight: 800; letter-spacing: -0.5px;">Scheme Portfolio Management</h2>
-        </header>
+<main class="dashboard-main" style="display: block; padding: 40px clamp(20px, 5vw, 100px);">
+    <header class="section-header" style="margin-bottom: 20px;">
+        <h2 style="font-weight: 800; letter-spacing: -0.5px;">Scheme Portfolio Management</h2>
+    </header>
 
-        <div class="table-container">
-            <table class="nexus-table">
-                <thead>
-                    <tr>
-                        <th>Scheme</th>
-                        <th>Total Value</th>
-                        <th>Monthly</th>
-                        <th>Period</th>
-                        <th>Members</th>
-                        <th>Starts</th>
-                        <th>Status</th>
-                        <th>Actions</th>
-                    </tr>
-                </thead>
-                <tbody id="schemeTableBody">
-                    <!-- Dynamic Rows -->
-                </tbody>
-            </table>
+    <div th:if="${error}" class="alert alert-danger" style="margin-bottom: 20px; padding: 15px; color: #721c24; background-color: #f8d7da; border: 1px solid #f5c6cb; border-radius: 4px;">
+        <i class="fa-solid fa-triangle-exclamation"></i> <span th:text="${error}"></span>
+    </div>
 
-            <footer class="pagination-box">
-                <!-- Empty by default, populated by JS -->
-                <div class="page-info text-muted" id="pageInfo"></div>
-                <div class="page-nav" id="paginationNav"></div>
-            </footer>
-        </div>
-    </main>
+    <div class="table-container">
+        <table class="nexus-table">
+            <thead>
+            <tr>
+                <th>Scheme</th>
+                <th>Total Value</th>
+                <th>Monthly</th>
+                <th>Period</th>
+                <th>Members</th>
+                <th>Starts</th>
+                <th>Status</th>
+                <th>Actions</th>
+            </tr>
+            </thead>
+            <tbody id="schemeTableBody">
+            <tr th:each="plan : ${plans}">
+                <td class="font-bold" th:text="${plan.name}"></td>
+                <td class="text-accent font-bold">
+                    ₹[[${#numbers.formatDecimal(plan.totalValue, 1, 'COMMA', 0, 'POINT')}]]
+                </td>
+                <td th:text="'₹' + ${#numbers.formatDecimal(plan.monthlyInstallment, 1, 'COMMA', 0, 'POINT')}"></td>
+                <td th:text="${plan.durationMonths} + ' Months'"></td>
+                <td><i class="fa-solid fa-user-group text-muted"></i> [[${plan.totalMembers}]]</td>
+                <td th:text="${#temporals.format(plan.startDate, 'dd MMM yyyy')}"></td>
+                <td><span class="badge-active">ACTIVE</span></td>
+                <td>
+                    <button class="logout-minimal-btn" th:onclick="'viewLedger(' + ${plan.id} + ')'">
+                        Ledger
+                    </button>
+                </td>
+            </tr>
 
-    <div th:replace="~{fragments/footer :: nexusFooter}"></div>
-    
-    <script th:src="@{/js/common.js}"></script>
-    <script th:src="@{/js/schemes.js}"></script>
+            <tr th:if="${#lists.isEmpty(plans)}">
+                <td colspan="8" style="text-align: center; padding: 50px;">
+                    <i class="fa-solid fa-box-open"
+                       style="font-size: 2rem; color: var(--text-muted);
+                               display: block; margin-bottom: 10px;">
+                    </i>
+                    <span class="text-muted">No active portfolios found.</span>
+                </td>
+            </tr>
+            </tbody>
+        </table>
+
+        <footer class="pagination-box" th:if="${totalPages > 0}">
+            <div class="page-info text-muted">
+                Showing page <span class="font-bold" th:text="${currentPage + 1}">1</span> of <span class="font-bold" th:text="${totalPages}">1</span>
+                (<span th:text="${totalItems}">0</span> distributed schemes total)
+            </div>
+
+            <div class="page-nav">
+                <a th:href="@{/fsn/schemes/active(page=${currentPage - 1})}"
+                   th:classappend="${currentPage == 0} ? 'disabled-nav' : ''"
+                   class="pagination-btn">
+                    <i class="fa-solid fa-chevron-left"></i>
+                </a>
+
+                <span th:each="i : ${#numbers.sequence(0, totalPages - 1)}">
+                        <a th:href="@{/fsn/schemes/active(page=${i})}"
+                           th:text="${i + 1}"
+                           th:classappend="${i == currentPage} ? 'active-page' : ''"
+                           class="pagination-btn"></a>
+                    </span>
+
+                <a th:href="@{/fsn/schemes/active(page=${currentPage + 1})}"
+                   th:classappend="${currentPage + 1 >= totalPages} ? 'disabled-nav' : ''"
+                   class="pagination-btn">
+                    <i class="fa-solid fa-chevron-right"></i>
+                </a>
+            </div>
+        </footer>
+    </div>
+</main>
+
+<div th:replace="~{fragments/footer :: nexusFooter}"></div>
+
+<script th:src="@{/js/common.js}"></script>
+<script th:src="@{/js/schemes.js}"></script>
 </body>
 </html>
