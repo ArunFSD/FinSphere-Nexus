@@ -1,4 +1,4 @@
-package com.finsphere.common.dto.events;
+package com.finsphere.common.dto.kafka;
 
 import lombok.AllArgsConstructor;
 import lombok.Data;
