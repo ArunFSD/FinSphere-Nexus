@@ -12,7 +12,7 @@ import com.finsphere.common.dto.ApiResponse;
 import com.finsphere.common.dto.UserContext;
 import com.finsphere.common.dto.auth.LoginRequest;
 import com.finsphere.common.dto.auth.RegistrationRequest;
-import com.finsphere.common.dto.events.UserUpdateEvent;
+import com.finsphere.common.dto.kafka.UserUpdateEvent;
 import com.finsphere.common.exception.DomainException;
 import com.finsphere.common.security.JwtUtils;
 import jakarta.servlet.http.HttpServletRequest;

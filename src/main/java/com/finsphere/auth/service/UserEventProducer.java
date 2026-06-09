@@ -1,6 +1,6 @@
 package com.finsphere.auth.service;
 
-import com.finsphere.common.dto.events.UserUpdateEvent;
+import com.finsphere.common.dto.kafka.UserUpdateEvent;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.kafka.core.KafkaTemplate;
