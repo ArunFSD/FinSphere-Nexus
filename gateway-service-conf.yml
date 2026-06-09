@@ -14,8 +14,7 @@ spring:
         - id: chit-finance-service
           uri: lb://chit-finance-service
           predicates:
-            - Path=/chits/**
-            - Path=/finance/**
+            - Path=/chits/**,/finance/**
         - id: frontend-service
           uri: lb://frontend-service
           predicates:
