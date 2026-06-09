@@ -2,6 +2,7 @@ package com.finsphere.controller.chit;
 
 
 import com.finsphere.common.dto.ApiResponse;
+import com.finsphere.common.model.chit.ChitPlanDTO;
 import com.finsphere.common.validation.ValidationGroups;
 import com.finsphere.constansts.ApiConstants;
 import com.finsphere.dto.ChitPlanRequest;
@@ -41,12 +42,12 @@ public class ChitPlanController {
     }
 
     @GetMapping("/active")
-    public ResponseEntity<ApiResponse<Page<ChitPlan>>> getActivePlans(
+    public ResponseEntity<ApiResponse<Page<ChitPlanDTO>>> getActivePlans(
             @PageableDefault(size = 10) Pageable pageable,
             HttpServletRequest request
     ) throws Exception {
         log.info(">>>> [CHIT_ACTIVE] GET /chits/plans/active | IP: {}", request.getRemoteAddr());
-        ApiResponse<Page<ChitPlan>> response = planService.getAllActivePlans(pageable);
+        ApiResponse<Page<ChitPlanDTO>> response = planService.getAllActivePlans(pageable);
         return ResponseEntity.status(response.getStatus()).body(response);
     }
 }

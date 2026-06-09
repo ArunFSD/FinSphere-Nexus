@@ -1,6 +1,6 @@
 package com.finsphere.service.kafka;
 
-import com.finsphere.common.dto.events.UserUpdateEvent;
+import com.finsphere.common.dto.kafka.UserUpdateEvent;
 import com.finsphere.entity.UserMirror;
 import com.finsphere.repository.jpa.UserMirrorRepository;
 import lombok.RequiredArgsConstructor;

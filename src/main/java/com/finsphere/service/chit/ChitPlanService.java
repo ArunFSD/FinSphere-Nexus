@@ -1,10 +1,12 @@
 package com.finsphere.service.chit;
 
 import com.finsphere.common.dto.ApiResponse;
+import com.finsphere.common.model.chit.ChitPlanDTO;
 import com.finsphere.common.security.SecurityUtils; // Import our new utility
 import com.finsphere.dto.ChitPlanRequest;
 import com.finsphere.entity.chit.ChitMonthlyCycle;
 import com.finsphere.entity.chit.ChitPlan;
+import com.finsphere.mapper.ChitPlanMapper;
 import com.finsphere.repository.jpa.ChitMonthlyCycleRepository;
 import com.finsphere.repository.jpa.ChitPlanRepository;
 import lombok.RequiredArgsConstructor;
@@ -27,7 +29,8 @@ public class ChitPlanService {
 
     private final ChitPlanRepository planRepository;
     private final ChitMonthlyCycleRepository cycleRepository;
-    private final SecurityUtils securityUtils; // Injecting the utility
+    private final SecurityUtils securityUtils;
+    private final ChitPlanMapper chitPlanMapper;
 
     @Transactional
     public ApiResponse<ChitPlan> createPlan(ChitPlanRequest request) {
@@ -92,14 +95,18 @@ public class ChitPlanService {
     }
 
     @Transactional(readOnly = true)
-    public ApiResponse<Page<ChitPlan>> getAllActivePlans(Pageable pageable) {
+    public ApiResponse<Page<ChitPlanDTO>> getAllActivePlans(Pageable pageable) {
         log.info(">>>> [CHIT_PLAN_FETCH_ACTIVE] Paginated request by: {}", securityUtils.getCurrentUserFullName());
-        Page<ChitPlan> plans = planRepository.findByIsActiveTrue(pageable);
-        return ApiResponse.<Page<ChitPlan>>builder()
+
+        Page<ChitPlan> plansPage = planRepository.findByIsActiveTrue(pageable);
+
+        Page<ChitPlanDTO> dtoPage = plansPage.map(chitPlanMapper::toDTO);
+
+        return ApiResponse.<Page<ChitPlanDTO>>builder()
                 .success(true)
                 .status(HttpStatus.OK.value())
-                .message("Retrieved page " + plans.getNumber() + " of active plans")
-                .data(plans)
+                .message("Retrieved page " + dtoPage.getNumber() + " of active plans")
+                .data(dtoPage)
                 .timestamp(LocalDateTime.now())
                 .build();
     }
