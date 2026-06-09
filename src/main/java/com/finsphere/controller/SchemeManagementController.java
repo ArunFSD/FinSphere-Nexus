@@ -1,7 +1,7 @@
 package com.finsphere.controller;
 
 import com.finsphere.common.dto.ApiResponse;
-import com.finsphere.common.model.ChitPlanDTO;
+import com.finsphere.common.model.chit.ChitPlanDTO;
 import com.finsphere.common.security.SecurityUtils;
 import com.finsphere.web.client.SchemeFeignClient;
 import jakarta.servlet.http.HttpServletRequest;

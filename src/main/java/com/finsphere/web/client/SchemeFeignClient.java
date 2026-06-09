@@ -1,7 +1,7 @@
 package com.finsphere.web.client;
 
 import com.finsphere.common.dto.ApiResponse;
-import com.finsphere.common.model.ChitPlanDTO;
+import com.finsphere.common.model.chit.ChitPlanDTO;
 import org.springframework.cloud.openfeign.FeignClient;
 import org.springframework.data.domain.Page;
 import org.springframework.http.ResponseEntity;
