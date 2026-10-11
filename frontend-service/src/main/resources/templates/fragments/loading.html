@@ -1,0 +1,25 @@
+<!DOCTYPE html>
+<html lang="en" xmlns:th="http://www.thymeleaf.org">
+<body>
+<!--/*
+  Loading screen for slow pages and saves, driven by app.js. A thin bar appears first, the full screen (which also
+  stops further clicks) only when the wait is long enough to notice. Without JavaScript it is never shown.
+*/-->
+<th:block th:fragment="screen">
+  <div class="loading" data-loading-screen hidden>
+    <div class="loading-bar" aria-hidden="true"></div>
+    <div class="loading-screen">
+      <div class="loading-card">
+        <div class="loading-board" aria-hidden="true">
+          <span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span>
+        </div>
+        <p class="loading-message" data-loading-message>Loading…</p>
+        <p class="loading-hint" data-loading-hint hidden></p>
+        <button type="button" class="btn btn-secondary" data-loading-stop hidden>Stop waiting</button>
+      </div>
+    </div>
+  </div>
+  <p class="visually-hidden" role="status" aria-live="polite" data-loading-announce></p>
+</th:block>
+</body>
+</html>

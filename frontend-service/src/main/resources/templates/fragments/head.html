@@ -1,0 +1,16 @@
+<!DOCTYPE html>
+<html lang="en" xmlns:th="http://www.thymeleaf.org">
+<head th:fragment="head(title)">
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="color-scheme" content="light dark">
+  <meta name="theme-color" content="#2f2348">
+  <title th:text="${title} + ' | FinSphere Nexus'">FinSphere Nexus</title>
+  <link rel="icon" type="image/svg+xml" th:href="@{/favicon.svg}" href="/favicon.svg">
+  <link rel="preload" as="font" type="font/woff2" crossorigin th:href="@{/fonts/atkinson-hyperlegible-next-var.woff2}" href="/fonts/atkinson-hyperlegible-next-var.woff2">
+  <link rel="stylesheet" th:href="@{/css/app.css}" href="/css/app.css">
+  <script th:src="@{/js/theme.js}" src="/js/theme.js"></script>
+  <script th:src="@{/js/app.js}" src="/js/app.js" defer></script>
+</head>
+<body></body>
+</html>

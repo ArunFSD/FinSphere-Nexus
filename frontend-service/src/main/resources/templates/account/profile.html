@@ -1,0 +1,29 @@
+<!DOCTYPE html>
+<html lang="en" xmlns:th="http://www.thymeleaf.org" th:replace="~{layouts/app :: layout('Your account', ~{::pageContent})}">
+<body>
+<th:block th:fragment="pageContent">
+<header class="page-head">
+  <div>
+    <h1>Your account</h1>
+    <p>To change these details, contact an administrator.</p>
+  </div>
+</header>
+
+<section class="panel" aria-labelledby="profile-title">
+  <div class="profile-name">
+    <span class="avatar" aria-hidden="true" th:text="${fmt.initials(profile.fullName)}">AS</span>
+    <div>
+      <h2 id="profile-title" th:text="${profile.fullName}">Arun S</h2>
+      <span class="muted" th:text="${fmt.role(profile.role)} + (${profile.memberSince != null} ? ', member since ' + ${fmt.day(profile.memberSince)} : '')">Administrator, member since 1 Jan 2026</span>
+    </div>
+  </div>
+  <dl class="facts">
+    <div><dt>Mobile number</dt><dd th:text="${fmt.phone(profile.phoneNumber)}">98765 43210</dd></div>
+    <div><dt>E-mail</dt><dd th:text="${profile.email != null ? profile.email : 'Not given'}">arun@example.com</dd></div>
+    <div><dt>Care of</dt><dd th:text="${profile.careOf != null ? profile.careOf : 'Not given'}">S/o Mani</dd></div>
+    <div><dt>Address</dt><dd th:text="${profile.address != null ? profile.address : 'Not given'}">12 Anna Salai, Chennai</dd></div>
+  </dl>
+</section>
+</th:block>
+</body>
+</html>

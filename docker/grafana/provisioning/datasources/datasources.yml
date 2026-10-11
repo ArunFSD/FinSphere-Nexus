@@ -1,0 +1,20 @@
+apiVersion: 1
+datasources:
+  - name: Loki
+    uid: loki
+    type: loki
+    access: proxy
+    url: http://loki:3100
+    isDefault: true
+    jsonData:
+      # Every log line carries "cid=<correlation id>": one click shows the same request in every service
+      derivedFields:
+        - name: correlationId
+          matcherRegex: 'cid=([A-Za-z0-9._-]{8,64})'
+          url: '{app=~".+"} |= "cid=$${__value.raw}"'
+          datasourceUid: loki
+  - name: Prometheus
+    uid: prometheus
+    type: prometheus
+    access: proxy
+    url: http://prometheus:9090

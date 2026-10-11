@@ -1,0 +1,4 @@
+com.finsphere.common.autoconfigure.FinsphereCoreAutoConfiguration
+com.finsphere.common.autoconfigure.FinsphereWebAutoConfiguration
+com.finsphere.common.autoconfigure.FinsphereSecurityAutoConfiguration
+com.finsphere.common.autoconfigure.FinsphereOpenApiAutoConfiguration

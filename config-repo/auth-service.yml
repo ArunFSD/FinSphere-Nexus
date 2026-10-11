@@ -1,0 +1,73 @@
+server:
+  port: ${AUTH_SERVICE_PORT:7001}
+
+spring:
+  datasource:
+    url: jdbc:postgresql://${DB_HOST:localhost}:${DB_PORT:5432}/${AUTH_DB_NAME:finsphere_auth}
+  jpa:
+    hibernate:
+      # Flyway owns the schema; Hibernate only verifies the entities match it at startup
+      ddl-auto: validate
+    properties:
+      hibernate:
+        default_schema: fsn_identity
+  flyway:
+    enabled: true
+    schemas: fsn_identity
+    default-schema: fsn_identity
+    create-schemas: true
+    # Existing databases created by the previous version are adopted at V1 and upgraded by V2+
+    baseline-on-migrate: true
+    baseline-version: 1
+    locations: classpath:db/migration
+    placeholders:
+      # Zone the 1.x services ran in. V2 reads the old wall-clock timestamps in this zone when converting
+      # them to TIMESTAMPTZ (irrelevant for new databases).
+      legacy-time-zone: ${FSN_LEGACY_TIME_ZONE:Asia/Kolkata}
+  data:
+    redis:
+      host: ${REDIS_HOST:localhost}
+      port: ${REDIS_PORT:7379}
+      # Sessions are checked on every sign-in: an unreachable Redis must fail fast, never hang the request
+      connect-timeout: 2s
+      timeout: 2s
+      # Sessions use StringRedisTemplate directly, no Spring Data Redis repositories
+      repositories:
+        enabled: false
+  kafka:
+    producer:
+      key-serializer: org.apache.kafka.common.serialization.StringSerializer
+      # The outbox stores the JSON payload, it is sent as-is
+      value-serializer: org.apache.kafka.common.serialization.StringSerializer
+      acks: all
+      properties:
+        enable.idempotence: true
+        max.block.ms: 5000
+        request.timeout.ms: 10000
+        delivery.timeout.ms: 30000
+
+finsphere:
+  auth:
+    # REPLACE: signing in again signs out older sessions. REJECT: refuse while another session is active.
+    concurrent-session-policy: REPLACE
+    login:
+      max-failed-attempts: 5
+      lockout-duration: 15m
+  outbox:
+    poll-interval: 2s
+    batch-size: 50
+    max-attempts: 20
+    send-timeout: 10s
+    retention: 7d
+
+springdoc:
+  swagger-ui:
+    path: /swagger-ui.html
+    document-title: "FinSphere Nexus: Auth API"
+    # Operations in a stable order, the time each call took, and Try it out open by default
+    operations-sorter: method
+    tags-sorter: alpha
+    display-request-duration: true
+    try-it-out-enabled: true
+    # Requests from the page send the session cookie set by POST /auth/login
+    with-credentials: true

@@ -1,0 +1,70 @@
+server:
+  port: ${CHIT_SERVICE_PORT:7002}
+
+spring:
+  datasource:
+    url: jdbc:postgresql://${DB_HOST:localhost}:${DB_PORT:5432}/${CHIT_DB_NAME:finsphere_chit_finance}
+  jpa:
+    hibernate:
+      # Flyway owns the schema (1.x used ddl-auto=update); Hibernate only verifies it at startup
+      ddl-auto: validate
+    properties:
+      hibernate:
+        default_schema: fsn_finance
+  flyway:
+    enabled: true
+    schemas: fsn_finance
+    default-schema: fsn_finance
+    create-schemas: true
+    baseline-on-migrate: true
+    baseline-version: 1
+    locations: classpath:db/migration
+    placeholders:
+      # Zone the 1.x services ran in. V2 reads the old wall-clock timestamps in this zone when converting
+      # them to TIMESTAMPTZ (irrelevant for new databases).
+      legacy-time-zone: ${FSN_LEGACY_TIME_ZONE:Asia/Kolkata}
+  mongodb:
+    # Spring Boot 4 moved this from spring.data.mongodb.uri. The timeouts (milliseconds) make an unreachable or stuck
+    # MongoDB fail the request with a 503 within seconds, instead of the driver's 30 s default or no limit at all.
+    uri: ${MONGODB_URI:mongodb://localhost:17017/finsphere_transaction?serverSelectionTimeoutMS=5000&connectTimeoutMS=5000&socketTimeoutMS=15000}
+  data:
+    mongodb:
+      auto-index-creation: true
+      representation:
+        big-decimal: decimal128
+    web:
+      pageable:
+        max-page-size: 100
+  kafka:
+    consumer:
+      group-id: chit-service-group
+      auto-offset-reset: earliest
+      key-deserializer: org.apache.kafka.common.serialization.StringDeserializer
+      # ErrorHandlingDeserializer turns a malformed message into a dead-letter record instead of an endless loop
+      value-deserializer: org.springframework.kafka.support.serializer.ErrorHandlingDeserializer
+      properties:
+        spring.deserializer.value.delegate.class: org.springframework.kafka.support.serializer.JacksonJsonDeserializer
+        spring.json.value.default.type: com.finsphere.common.event.UserUpdateEvent
+        spring.json.use.type.headers: false
+        spring.json.trusted.packages: com.finsphere.common.event
+    producer:
+      key-serializer: org.apache.kafka.common.serialization.StringSerializer
+      acks: all
+      properties:
+        max.block.ms: 5000
+
+finsphere:
+  chit:
+    business-time-zone: Asia/Kolkata
+
+springdoc:
+  swagger-ui:
+    path: /swagger-ui.html
+    document-title: "FinSphere Nexus: Chit and Finance API"
+    # Operations in a stable order, the time each call took, and Try it out open by default
+    operations-sorter: method
+    tags-sorter: alpha
+    display-request-duration: true
+    try-it-out-enabled: true
+    # Requests from the page send the session cookie set by POST /auth/login
+    with-credentials: true

@@ -1,0 +1,108 @@
+<!DOCTYPE html>
+<html lang="en" xmlns:th="http://www.thymeleaf.org" th:replace="~{layouts/app :: layout('Record payment', ~{::pageContent})}">
+<body>
+<th:block th:fragment="pageContent">
+<a class="back-link" th:href="@{/payments}" href="/payments"><svg class="icon" aria-hidden="true"><use href="#i-chevron-left"></use></svg>Payments</a>
+<header class="page-head">
+  <div>
+    <h1>Record payment</h1>
+    <p>Choose the member first. The next list then shows only their schemes and open loans.</p>
+  </div>
+</header>
+
+<div class="alert alert-error" role="alert" th:if="${error != null}">
+  <svg class="icon" aria-hidden="true"><use href="#i-alert"></use></svg>
+  <p th:text="${error}">Invalid payment target</p>
+</div>
+
+<!--/* Step 1: choose the member (a GET form, so it works without JavaScript; with it, choosing submits) */-->
+<form class="panel" th:action="@{/payments/new}" action="/payments/new" method="get" data-auto-submit data-loading="Loading their schemes and loans…">
+  <div class="form-grid">
+    <div class="field" th:classappend="${errors['userId'] != null} ? 'field-invalid'">
+      <label for="payment-member">Member</label>
+      <th:block th:if="${members.ok}">
+        <select class="select" id="payment-member" name="member" required>
+          <option value="">Choose a member</option>
+          <option th:each="member : ${members.value.content}" th:value="${member.userId}"
+                  th:selected="${form.userId != null and form.userId == member.userId}"
+                  th:text="${member.fullName} + ', ' + ${fmt.phone(member.phoneNumber)}">Ravi Kumar, 98765 43210</option>
+        </select>
+      </th:block>
+      <th:block th:unless="${members.ok}"><p th:replace="~{fragments/schemes :: failed(${members})}"></p></th:block>
+      <p class="field-error" th:if="${errors['userId'] != null}"><svg class="icon" aria-hidden="true"><use href="#i-alert"></use></svg><span th:text="${errors['userId']}">Choose a member</span></p>
+    </div>
+  </div>
+  <div class="form-actions" data-hide-when-scripted>
+    <button class="btn btn-secondary" type="submit">Show their schemes and loans</button>
+  </div>
+</form>
+
+<!--/* Step 2: the payment itself */-->
+<form class="panel" th:if="${form.userId != null}" th:action="@{/payments}" action="/payments" method="post" data-submit-once data-loading="Recording the payment…">
+  <input type="hidden" name="userId" th:value="${form.userId}">
+  <th:block th:unless="${targets.ok}"><p th:replace="~{fragments/schemes :: failed(${targets})}"></p></th:block>
+  <div class="empty" th:if="${targets.ok and targets.value.isEmpty()}">
+    <p>This member has no schemes or open loans to pay towards.</p>
+  </div>
+  <div class="form-grid form-grid-2" th:if="${targets.ok and !targets.value.isEmpty()}">
+    <div class="field span-all" th:classappend="${errors['target'] != null} ? 'field-invalid'">
+      <label for="payment-target">Payment for</label>
+      <select class="select" id="payment-target" name="target" required>
+        <option value="">Choose a scheme or loan</option>
+        <option th:each="target : ${targets.value}" th:value="${target.value}" th:text="${target.label}"
+                th:selected="${form.target == target.value}">Chit: Gold 1 lakh</option>
+      </select>
+      <p class="field-error" th:if="${errors['target'] != null}"><svg class="icon" aria-hidden="true"><use href="#i-alert"></use></svg><span th:text="${errors['target']}">Choose what this payment is for</span></p>
+    </div>
+
+    <div class="field" th:classappend="${errors['amount'] != null} ? 'field-invalid'">
+      <label for="amount">Amount received</label>
+      <div class="input-affix"><span class="affix">₹</span>
+        <input class="input" id="amount" name="amount" type="number" inputmode="decimal" min="0.01" step="0.01" required
+               th:value="${fmt.plain(form.amount)}" th:aria-invalid="${errors['amount'] != null} ? 'true' : null"></div>
+      <p class="field-error" th:if="${errors['amount'] != null}"><svg class="icon" aria-hidden="true"><use href="#i-alert"></use></svg><span th:text="${errors['amount']}">Enter the amount received</span></p>
+    </div>
+
+    <div class="field" th:classappend="${errors['paymentDate'] != null} ? 'field-invalid'">
+      <label for="paymentDate">Paid on</label>
+      <input class="input" id="paymentDate" name="paymentDate" type="date" required
+             th:attr="max=${fmt.isoDate(fmt.today())}" th:value="${fmt.isoDate(form.paymentDate)}"
+             th:aria-invalid="${errors['paymentDate'] != null} ? 'true' : null">
+      <p class="field-error" th:if="${errors['paymentDate'] != null}"><svg class="icon" aria-hidden="true"><use href="#i-alert"></use></svg><span th:text="${errors['paymentDate']}">The payment date cannot be in the future</span></p>
+    </div>
+
+    <fieldset class="field span-all">
+      <legend>How it was paid</legend>
+      <div class="choice-row">
+        <div class="choice" th:each="mode : ${paymentModes}">
+          <input type="radio" name="paymentMode" th:id="'mode-' + ${mode}" th:value="${mode}" th:checked="${form.paymentMode == mode}">
+          <label th:for="'mode-' + ${mode}" th:text="${fmt.mode(mode)}">Cash</label>
+        </div>
+      </div>
+      <p class="field-error" th:if="${errors['paymentMode'] != null}"><svg class="icon" aria-hidden="true"><use href="#i-alert"></use></svg><span th:text="${errors['paymentMode']}">Choose how the money was paid</span></p>
+    </fieldset>
+
+    <div class="field" th:classappend="${errors['receivedByInfo'] != null} ? 'field-invalid'">
+      <label for="receivedByInfo">Collected by</label>
+      <input class="input" id="receivedByInfo" name="receivedByInfo" type="text" required maxlength="250"
+             aria-describedby="receivedByInfo-hint" th:value="${form.receivedByInfo}"
+             th:aria-invalid="${errors['receivedByInfo'] != null} ? 'true' : null">
+      <span class="hint" id="receivedByInfo-hint">Name of the agent or staff member, or the UPI reference.</span>
+      <p class="field-error" th:if="${errors['receivedByInfo'] != null}"><svg class="icon" aria-hidden="true"><use href="#i-alert"></use></svg><span th:text="${errors['receivedByInfo']}">Enter who collected the money</span></p>
+    </div>
+
+    <div class="field" th:classappend="${errors['remarks'] != null} ? 'field-invalid'">
+      <label for="remarks">Note <span class="optional">(optional)</span></label>
+      <input class="input" id="remarks" name="remarks" type="text" maxlength="500" th:value="${form.remarks}">
+      <p class="field-error" th:if="${errors['remarks'] != null}"><svg class="icon" aria-hidden="true"><use href="#i-alert"></use></svg><span th:text="${errors['remarks']}">Keep remarks under 500 characters</span></p>
+    </div>
+  </div>
+
+  <div class="form-actions" th:if="${targets.ok and !targets.value.isEmpty()}">
+    <button class="btn btn-primary" type="submit" data-busy-label="Recording…">Record payment</button>
+    <a class="btn btn-quiet" th:href="@{/payments}" href="/payments">Cancel</a>
+  </div>
+</form>
+</th:block>
+</body>
+</html>

@@ -1,0 +1,28 @@
+<!DOCTYPE html>
+<html lang="en" xmlns:th="http://www.thymeleaf.org" th:replace="~{layouts/app :: layout('Schemes', ~{::pageContent})}">
+<body>
+<th:block th:fragment="pageContent">
+<header class="page-head">
+  <div>
+    <h1>Schemes</h1>
+    <p>Running chit schemes, newest first.</p>
+  </div>
+  <div class="page-actions" th:if="${me.admin}">
+    <a class="btn btn-primary" th:href="@{/schemes/new}" href="/schemes/new">
+      <svg class="icon" aria-hidden="true"><use href="#i-plus"></use></svg>New scheme</a>
+  </div>
+</header>
+
+<section class="panel" aria-label="Running schemes">
+  <ul class="scheme-list" th:unless="${plans.content.isEmpty()}">
+    <th:block th:each="plan : ${plans.content}"><li th:replace="~{fragments/schemes :: row(${plan})}"></li></th:block>
+  </ul>
+  <div class="empty" th:if="${plans.content.isEmpty()}">
+    <p th:text="${me.admin} ? 'No schemes are running. Create one to start booking members into slots.' : 'No schemes are open right now. Check again later.'">No schemes are running.</p>
+    <a class="btn btn-secondary" th:if="${me.admin}" th:href="@{/schemes/new}" href="/schemes/new">Create a scheme</a>
+  </div>
+  <nav th:replace="~{fragments/schemes :: pager(${plans}, '/schemes')}"></nav>
+</section>
+</th:block>
+</body>
+</html>

@@ -1,0 +1,141 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!--
+    FinSphere Nexus shared Logback configuration.
+
+    Include it from a service's logback-spring.xml:
+        <configuration>
+            <include resource="com/finsphere/logging/logback-base.xml"/>
+        </configuration>
+
+    Files written to ${finsphere.logging.dir} (default ./logs):
+        <app>.log         everything at INFO and above (rolled daily and by size, gzipped)
+        <app>-error.log   WARN and ERROR only, for fast triage
+        <app>-audit.log   one JSON document per audited business action (logger "AUDIT")
+
+    Tunables (Spring properties, also settable as env vars, e.g. FINSPHERE_LOGGING_DIR):
+        finsphere.logging.dir, max-file-size, max-history, total-size-cap, audit-max-history
+        finsphere.logging.loki.url  (used only when the "loki" profile is active)
+-->
+<included>
+    <!-- Correlation id is put into the MDC by the CorrelationIdFilter (servlet) or the gateway filter -->
+    <property name="LOG_CORRELATION_PATTERN" value="[cid=%X{correlationId:-} uid=%X{userId:-}] "/>
+
+    <include resource="org/springframework/boot/logging/logback/defaults.xml"/>
+
+    <springProperty scope="context" name="APP_NAME" source="spring.application.name" defaultValue="finsphere"/>
+    <springProperty scope="context" name="LOG_DIR" source="finsphere.logging.dir" defaultValue="logs"/>
+    <springProperty scope="context" name="LOG_MAX_FILE_SIZE" source="finsphere.logging.max-file-size" defaultValue="50MB"/>
+    <springProperty scope="context" name="LOG_MAX_HISTORY" source="finsphere.logging.max-history" defaultValue="30"/>
+    <springProperty scope="context" name="LOG_TOTAL_SIZE_CAP" source="finsphere.logging.total-size-cap" defaultValue="2GB"/>
+    <springProperty scope="context" name="AUDIT_MAX_HISTORY" source="finsphere.logging.audit-max-history" defaultValue="365"/>
+    <springProperty scope="context" name="LOKI_URL" source="finsphere.logging.loki.url"
+                    defaultValue="http://localhost:3100/loki/api/v1/push"/>
+
+    <include resource="org/springframework/boot/logging/logback/console-appender.xml"/>
+
+    <appender name="FILE" class="ch.qos.logback.core.rolling.RollingFileAppender">
+        <file>${LOG_DIR}/${APP_NAME}.log</file>
+        <encoder>
+            <pattern>${FILE_LOG_PATTERN}</pattern>
+            <charset>${FILE_LOG_CHARSET}</charset>
+        </encoder>
+        <rollingPolicy class="ch.qos.logback.core.rolling.SizeAndTimeBasedRollingPolicy">
+            <fileNamePattern>${LOG_DIR}/archive/${APP_NAME}.%d{yyyy-MM-dd}.%i.log.gz</fileNamePattern>
+            <maxFileSize>${LOG_MAX_FILE_SIZE}</maxFileSize>
+            <maxHistory>${LOG_MAX_HISTORY}</maxHistory>
+            <totalSizeCap>${LOG_TOTAL_SIZE_CAP}</totalSizeCap>
+        </rollingPolicy>
+    </appender>
+
+    <appender name="ERROR_FILE" class="ch.qos.logback.core.rolling.RollingFileAppender">
+        <filter class="ch.qos.logback.classic.filter.ThresholdFilter">
+            <level>WARN</level>
+        </filter>
+        <file>${LOG_DIR}/${APP_NAME}-error.log</file>
+        <encoder>
+            <pattern>${FILE_LOG_PATTERN}</pattern>
+            <charset>${FILE_LOG_CHARSET}</charset>
+        </encoder>
+        <rollingPolicy class="ch.qos.logback.core.rolling.SizeAndTimeBasedRollingPolicy">
+            <fileNamePattern>${LOG_DIR}/archive/${APP_NAME}-error.%d{yyyy-MM-dd}.%i.log.gz</fileNamePattern>
+            <maxFileSize>${LOG_MAX_FILE_SIZE}</maxFileSize>
+            <maxHistory>${LOG_MAX_HISTORY}</maxHistory>
+            <totalSizeCap>${LOG_TOTAL_SIZE_CAP}</totalSizeCap>
+        </rollingPolicy>
+    </appender>
+
+    <appender name="AUDIT_FILE" class="ch.qos.logback.core.rolling.RollingFileAppender">
+        <file>${LOG_DIR}/${APP_NAME}-audit.log</file>
+        <encoder>
+            <pattern>%msg%n</pattern>
+            <charset>UTF-8</charset>
+        </encoder>
+        <rollingPolicy class="ch.qos.logback.core.rolling.SizeAndTimeBasedRollingPolicy">
+            <fileNamePattern>${LOG_DIR}/archive/${APP_NAME}-audit.%d{yyyy-MM-dd}.%i.log.gz</fileNamePattern>
+            <maxFileSize>${LOG_MAX_FILE_SIZE}</maxFileSize>
+            <maxHistory>${AUDIT_MAX_HISTORY}</maxHistory>
+            <totalSizeCap>${LOG_TOTAL_SIZE_CAP}</totalSizeCap>
+        </rollingPolicy>
+    </appender>
+
+    <!--
+        Async wrappers keep disk I/O off request threads.
+        Application logs never block (neverBlock=true); audit logs are never discarded.
+    -->
+    <appender name="ASYNC_FILE" class="ch.qos.logback.classic.AsyncAppender">
+        <queueSize>8192</queueSize>
+        <discardingThreshold>0</discardingThreshold>
+        <neverBlock>true</neverBlock>
+        <appender-ref ref="FILE"/>
+    </appender>
+
+    <appender name="ASYNC_ERROR_FILE" class="ch.qos.logback.classic.AsyncAppender">
+        <queueSize>2048</queueSize>
+        <discardingThreshold>0</discardingThreshold>
+        <neverBlock>true</neverBlock>
+        <appender-ref ref="ERROR_FILE"/>
+    </appender>
+
+    <appender name="ASYNC_AUDIT_FILE" class="ch.qos.logback.classic.AsyncAppender">
+        <queueSize>8192</queueSize>
+        <discardingThreshold>0</discardingThreshold>
+        <neverBlock>false</neverBlock>
+        <appender-ref ref="AUDIT_FILE"/>
+    </appender>
+
+    <logger name="AUDIT" level="INFO" additivity="false">
+        <appender-ref ref="ASYNC_AUDIT_FILE"/>
+    </logger>
+
+    <root level="INFO">
+        <appender-ref ref="CONSOLE"/>
+        <appender-ref ref="ASYNC_FILE"/>
+        <appender-ref ref="ASYNC_ERROR_FILE"/>
+    </root>
+
+    <!-- Ship logs to Grafana Loki: run with SPRING_PROFILES_ACTIVE=...,loki -->
+    <springProfile name="loki">
+        <appender name="LOKI" class="com.github.loki4j.logback.Loki4jAppender">
+            <labels>
+                app = ${APP_NAME}
+                host = ${HOSTNAME}
+            </labels>
+            <message>
+                <pattern>${FILE_LOG_PATTERN}</pattern>
+            </message>
+            <http>
+                <url>${LOKI_URL}</url>
+            </http>
+            <batch>
+                <timeoutMs>5000</timeoutMs>
+            </batch>
+        </appender>
+
+        <logger name="AUDIT">
+            <appender-ref ref="LOKI"/>
+        </logger>
+        <root>
+            <appender-ref ref="LOKI"/>
+        </root>
+    </springProfile>
+</included>

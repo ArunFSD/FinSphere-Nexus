@@ -1,0 +1,52 @@
+<!DOCTYPE html>
+<html lang="en" xmlns:th="http://www.thymeleaf.org" th:replace="~{layouts/auth :: layout('Sign in', ~{::pageContent})}">
+<body>
+<th:block th:fragment="pageContent">
+<div class="auth-card">
+  <a class="auth-brand auth-brand-compact" th:href="@{/}" href="/">
+    <svg class="brand-mark" aria-hidden="true"><use href="#brand-mark"></use></svg>
+    <span class="brand-name">FinSphere Nexus<span>Chits and loans</span></span>
+  </a>
+  <h1>Sign in</h1>
+  <p class="lead">Use the mobile number or e-mail address you registered with.</p>
+
+  <div class="alert alert-info" role="status" th:if="${notice != null}" th:class="'alert ' + ${notice.tone.alertClass}">
+    <svg class="icon" aria-hidden="true"><use href="#i-info" th:href="${notice.tone.icon}"></use></svg>
+    <p th:text="${notice.message}">You have signed out.</p>
+  </div>
+  <div class="alert alert-error" role="alert" th:if="${error != null}">
+    <svg class="icon" aria-hidden="true"><use href="#i-alert"></use></svg>
+    <p th:text="${error}">Invalid phone number/email or password</p>
+  </div>
+
+  <form th:action="@{/login}" action="/login" method="post" data-submit-once data-loading="Signing you in…">
+    <input type="hidden" name="next" th:value="${next}">
+    <div class="form-grid">
+      <div class="field">
+        <label for="identifier">Mobile number or e-mail</label>
+        <input class="input" id="identifier" name="identifier" type="text" autocomplete="username"
+               autocapitalize="none" spellcheck="false" required maxlength="100" th:value="${identifier}" autofocus>
+      </div>
+      <div class="field">
+        <label for="password">Password</label>
+        <div class="input-affix">
+          <input class="input input-with-reveal" id="password" name="password" type="password"
+                 autocomplete="current-password" required maxlength="128">
+          <button type="button" class="reveal" data-reveal="password" aria-pressed="false">
+            <svg class="icon icon-eye" aria-hidden="true"><use href="#i-eye"></use></svg>
+            <span class="visually-hidden">Show password</span>
+          </button>
+        </div>
+        <a class="hint" th:href="@{/forgot-password}" href="/forgot-password">Forgot your password?</a>
+      </div>
+    </div>
+    <div class="form-actions">
+      <button class="btn btn-primary btn-block" type="submit" data-busy-label="Signing in…">Sign in</button>
+    </div>
+  </form>
+
+  <p class="auth-alt">New member? <a th:href="@{/register}" href="/register">Create an account</a></p>
+</div>
+</th:block>
+</body>
+</html>

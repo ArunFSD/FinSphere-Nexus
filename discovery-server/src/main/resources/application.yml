@@ -1,0 +1,39 @@
+server:
+  port: ${DISCOVERY_SERVER_PORT:7761}
+  shutdown: graceful
+
+spring:
+  application:
+    name: discovery-server
+  threads:
+    virtual:
+      enabled: true
+
+eureka:
+  instance:
+    hostname: ${EUREKA_HOSTNAME:localhost}
+  client:
+    # The registry does not register with itself
+    register-with-eureka: false
+    fetch-registry: false
+    service-url:
+      defaultZone: http://${eureka.instance.hostname}:${server.port}/eureka/
+  server:
+    # Single-node development registry: evict dead instances quickly instead of keeping them
+    enable-self-preservation: ${EUREKA_SELF_PRESERVATION:false}
+    eviction-interval-timer-in-ms: 15000
+    wait-time-in-ms-when-sync-empty: 0
+
+management:
+  endpoints:
+    web:
+      exposure:
+        include: health,info,prometheus
+  endpoint:
+    health:
+      probes:
+        enabled: true
+
+finsphere:
+  logging:
+    dir: ${FINSPHERE_LOGGING_DIR:logs}

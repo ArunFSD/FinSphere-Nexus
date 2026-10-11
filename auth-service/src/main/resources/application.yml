@@ -1,0 +1,16 @@
+# Bootstrap settings only. Everything else comes from config-repo/application.yml + config-repo/auth-service.yml
+spring:
+  application:
+    name: auth-service
+  config:
+    import: "configserver:${CONFIG_SERVER_URL:http://localhost:7888}"
+  cloud:
+    config:
+      username: ${CONFIG_SERVER_USERNAME:fsn-config}
+      password: ${CONFIG_SERVER_PASSWORD:fsn-config-local-secret}
+      fail-fast: true
+      retry:
+        initial-interval: 2000
+        multiplier: 1.5
+        max-interval: 10000
+        max-attempts: 20
