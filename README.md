@@ -28,6 +28,7 @@ redirects and troubleshooting) is also available as a printable PDF: [`docs/FinS
 - [Timeouts: nothing waits forever](#timeouts-nothing-waits-forever)
 - [Loading screen](#loading-screen)
 - [Page and route redirects](#page-and-route-redirects)
+- [Theme and devices](#theme-and-devices)
 - [Troubleshooting](#troubleshooting)
 - [Run on your machine for development](#run-on-your-machine-for-development)
 - [Configuration](#configuration)
@@ -704,6 +705,43 @@ never sends the form again.
 | `/schemes/abc` | The 404 page |
 | A member opens an administrator page | The 403 page |
 | An unknown `notice` in the address | Ignored, nothing from the address is shown on the page |
+
+## Theme and devices
+
+### Works on every screen
+
+The web app is one responsive layout, not a separate mobile site. It was checked for correct fit (no sideways
+scrolling, readable text, comfortable tap targets) on every width from a 320 px phone up to a 1920 px desktop, in
+both light and dark themes:
+
+- **Phones** (320–480 px): a top bar with a slide-in menu, tables turn into stacked cards, forms and buttons go full
+  width, the slot board wraps to fit.
+- **Tablets** (600–1024 px): the same slide-in menu with wider, multi-column content.
+- **Laptops and desktops** (1024 px and up): the side rail is always visible, content is capped at a comfortable
+  reading width and centred on very wide screens.
+
+Light or dark follows the device setting, and the moon/sun button switches it and remembers the choice. Nothing
+depends on an external font, script or CDN, so it renders the same offline and behind a strict Content Security
+Policy.
+
+### Change the whole theme in one place
+
+All colours come from a few variables at the top of `frontend-service/src/main/resources/static/css/app.css`. To
+recolour the entire app — side rail, buttons, links, headings, washes, focus ring, in both light and dark — change
+one value, the brand hue:
+
+```css
+:root {
+  --brand-h: 258;    /* plum (default). try: indigo 245 · blue 212 · teal 174 · green 150 · rose 344 */
+  --brand-sat: 100%; /* overall colourfulness, lower is more muted */
+  --accent-h: 45;    /* the one stand-out accent (the note-yellow on a prized slot / open month) */
+}
+```
+
+Everything else is derived from these with `hsl()`, so you never hunt through the stylesheet for colours. The whole
+palette for light and dark mode re-tints from the same hue. The status colours (success green, error red, caution
+amber) stay fixed on purpose, so a warning always reads as a warning whatever the brand colour is. After editing,
+rebuild the front end (or set `SPRING_THYMELEAF_CACHE=false` and refresh while developing).
 
 ## Troubleshooting
 
