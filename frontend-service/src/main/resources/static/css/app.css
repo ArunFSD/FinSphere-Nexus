@@ -25,28 +25,48 @@
 :root {
   color-scheme: light;
 
-  --plum-950: #1b1430;
-  --plum-900: #241a3a;
-  --plum-800: #2f2348;
-  --plum-700: #403061;
-  --plum-500: #6a55a6;
-  --lavender-300: #cbc1e8;
-  --lavender-200: #ddd6f1;
-  --lavender-100: #ece8f6;
-  --lavender-50: #f6f4fb;
-  --note-yellow: #f5b800;
-  --note-yellow-soft: #fff3c4;
-  --note-yellow-ink: #5c4300;
+  /* ===================================================================================================
+     THEME — the ONE place to recolour the whole app. Change --brand-h and everything (brand, rail,
+     lavenders, links, focus ring, headings, rules, page tint) re-colours itself, in BOTH light and
+     dark mode. The note-yellow accent (the one thing that must stand out) has its own hue, --accent-h.
+     Only the status colours (success green, error red, caution amber) stay fixed, on purpose.
 
-  --ink: #1e1b2a;
-  --ink-muted: #5c586c;
-  --ink-soft: #858196;
-  --page: #f2f2f5;
+       --brand-h   brand hue, 0–360.  plum 258 · indigo 245 · blue 212 · teal 174 · green 150 ·
+                   rose 344 · crimson 2 · slate 220 (pair slate with a lower --brand-sat)
+       --brand-sat overall colourfulness of the brand, 0–100%. Lower is more muted/corporate.
+       --accent-h  accent hue, 0–360 (default is the ₹200-note yellow). gold 45 · amber 38 · lime 86
+     =================================================================================================== */
+  --brand-h: 258;
+  --brand-sat: 100%;
+  --accent-h: 45;
+
+  /* brand ink ramp — darkest to mid (rail, headings, buttons), derived from the seed above */
+  --plum-950: hsl(var(--brand-h) calc(41% * var(--brand-sat) / 100%) 13%);
+  --plum-900: hsl(var(--brand-h) calc(38% * var(--brand-sat) / 100%) 16%);
+  --plum-800: hsl(var(--brand-h) calc(35% * var(--brand-sat) / 100%) 21%);
+  --plum-700: hsl(var(--brand-h) calc(34% * var(--brand-sat) / 100%) 28%);
+  --plum-500: hsl(var(--brand-h) calc(32% * var(--brand-sat) / 100%) 49%);
+  /* brand tints — washes, chips, hovers */
+  --lavender-300: hsl(var(--brand-h) calc(46% * var(--brand-sat) / 100%) 83%);
+  --lavender-200: hsl(var(--brand-h) calc(49% * var(--brand-sat) / 100%) 89%);
+  --lavender-100: hsl(var(--brand-h) calc(44% * var(--brand-sat) / 100%) 94%);
+  --lavender-50: hsl(var(--brand-h) calc(47% * var(--brand-sat) / 100%) 97%);
+
+  --note-yellow: hsl(var(--accent-h) 100% 48%);
+  --note-yellow-soft: hsl(var(--accent-h) 100% 88%);
+  --note-yellow-ink: hsl(var(--accent-h) 100% 18%);
+
+  /* text and surfaces — carry a faint brand tint so neutrals sit with the hue */
+  --ink: hsl(var(--brand-h) calc(22% * var(--brand-sat) / 100%) 14%);
+  --ink-muted: hsl(var(--brand-h) calc(10% * var(--brand-sat) / 100%) 38%);
+  --ink-soft: hsl(var(--brand-h) calc(9% * var(--brand-sat) / 100%) 55%);
+  --page: hsl(var(--brand-h) calc(11% * var(--brand-sat) / 100%) 95%);
   --surface: #ffffff;
-  --surface-sunken: #f7f6fa;
-  --rule: #e3e0ea;
-  --rule-strong: #c9c4d6;
+  --surface-sunken: hsl(var(--brand-h) calc(20% * var(--brand-sat) / 100%) 98%);
+  --rule: hsl(var(--brand-h) calc(17% * var(--brand-sat) / 100%) 90%);
+  --rule-strong: hsl(var(--brand-h) calc(17% * var(--brand-sat) / 100%) 80%);
 
+  /* status colours stay fixed: green must read as green whatever the brand hue is */
   --positive: #1b7349;
   --positive-wash: #e4f3ea;
   --negative: #b42318;
@@ -57,13 +77,13 @@
   --brand: var(--plum-800);
   --brand-hover: var(--plum-700);
   --brand-ink: #ffffff;
-  --link: #5636b0;
-  --focus: #6a4fd6;
+  --link: hsl(var(--brand-h) calc(53% * var(--brand-sat) / 100%) 45%);
+  --focus: hsl(var(--brand-h) calc(59% * var(--brand-sat) / 100%) 55%);
   --selection: var(--lavender-200);
 
   --rail-bg: var(--plum-800);
-  --rail-ink: #ece7f8;
-  --rail-muted: #b5abd2;
+  --rail-ink: hsl(var(--brand-h) calc(50% * var(--brand-sat) / 100%) 94%);
+  --rail-muted: hsl(var(--brand-h) calc(30% * var(--brand-sat) / 100%) 75%);
   --rail-hover: rgba(255, 255, 255, 0.07);
   --rail-active: rgba(255, 255, 255, 0.12);
 
@@ -96,72 +116,74 @@
 
 :root[data-theme="dark"] {
   color-scheme: dark;
-  --ink: #ece9f5;
-  --ink-muted: #b6b0c8;
-  --ink-soft: #8d87a2;
-  --page: #13101c;
-  --surface: #1c1828;
-  --surface-sunken: #171322;
-  --rule: #2f2942;
-  --rule-strong: #443b5c;
-  --lavender-50: #201a31;
-  --lavender-100: #2a2340;
-  --lavender-200: #3a3057;
-  --lavender-300: #54467f;
-  --note-yellow: #ffc933;
-  --note-yellow-soft: #3b3011;
-  --note-yellow-ink: #ffe08a;
+  /* Dark mode derives from the SAME --brand-h / --accent-h as light, so one hue change re-themes both. */
+  --ink: hsl(var(--brand-h) calc(38% * var(--brand-sat) / 100%) 94%);
+  --ink-muted: hsl(var(--brand-h) calc(19% * var(--brand-sat) / 100%) 74%);
+  --ink-soft: hsl(var(--brand-h) calc(13% * var(--brand-sat) / 100%) 58%);
+  --page: hsl(var(--brand-h) calc(27% * var(--brand-sat) / 100%) 9%);
+  --surface: hsl(var(--brand-h) calc(25% * var(--brand-sat) / 100%) 13%);
+  --surface-sunken: hsl(var(--brand-h) calc(28% * var(--brand-sat) / 100%) 10%);
+  --rule: hsl(var(--brand-h) calc(23% * var(--brand-sat) / 100%) 21%);
+  --rule-strong: hsl(var(--brand-h) calc(22% * var(--brand-sat) / 100%) 30%);
+  --lavender-50: hsl(var(--brand-h) calc(31% * var(--brand-sat) / 100%) 15%);
+  --lavender-100: hsl(var(--brand-h) calc(29% * var(--brand-sat) / 100%) 19%);
+  --lavender-200: hsl(var(--brand-h) calc(29% * var(--brand-sat) / 100%) 26%);
+  --lavender-300: hsl(var(--brand-h) calc(29% * var(--brand-sat) / 100%) 39%);
+  --note-yellow: hsl(var(--accent-h) 100% 60%);
+  --note-yellow-soft: hsl(var(--accent-h) 55% 15%);
+  --note-yellow-ink: hsl(var(--accent-h) 100% 77%);
   --positive: #5cc996;
   --positive-wash: #16301f;
   --negative: #ff8f84;
   --negative-wash: #3a1916;
   --caution: #f2c25c;
   --caution-wash: #33290f;
-  --brand: #b8a6f2;
-  --brand-hover: #cbbdf7;
-  --brand-ink: #1a1426;
-  --link: #c4b6f6;
-  --focus: #c4b6f6;
-  --selection: #3a3057;
-  --rail-bg: #0f0c17;
-  --rail-ink: #e6e1f4;
-  --rail-muted: #9f97ba;
+  --brand: hsl(var(--brand-h) calc(75% * var(--brand-sat) / 100%) 80%);
+  --brand-hover: hsl(var(--brand-h) calc(78% * var(--brand-sat) / 100%) 85%);
+  --brand-ink: hsl(var(--brand-h) calc(30% * var(--brand-sat) / 100%) 11%);
+  --link: hsl(var(--brand-h) calc(78% * var(--brand-sat) / 100%) 84%);
+  --focus: hsl(var(--brand-h) calc(78% * var(--brand-sat) / 100%) 84%);
+  --selection: var(--lavender-200);
+  --rail-bg: hsl(var(--brand-h) calc(28% * var(--brand-sat) / 100%) 7%);
+  --rail-ink: hsl(var(--brand-h) calc(35% * var(--brand-sat) / 100%) 92%);
+  --rail-muted: hsl(var(--brand-h) calc(20% * var(--brand-sat) / 100%) 66%);
   --shadow-float: 0 12px 32px rgba(0, 0, 0, 0.5), 0 2px 6px rgba(0, 0, 0, 0.4);
 }
 
 @media (prefers-color-scheme: dark) {
   :root:not([data-theme="light"]) {
     color-scheme: dark;
-    --ink: #ece9f5;
-    --ink-muted: #b6b0c8;
-    --ink-soft: #8d87a2;
-    --page: #13101c;
-    --surface: #1c1828;
-    --surface-sunken: #171322;
-    --rule: #2f2942;
-    --rule-strong: #443b5c;
-    --lavender-50: #201a31;
-    --lavender-100: #2a2340;
-    --lavender-200: #3a3057;
-    --lavender-300: #54467f;
-    --note-yellow: #ffc933;
-    --note-yellow-soft: #3b3011;
-    --note-yellow-ink: #ffe08a;
+    /* Same derivation as :root[data-theme="dark"], for people whose device is set to dark. */
+    --ink: hsl(var(--brand-h) calc(38% * var(--brand-sat) / 100%) 94%);
+    --ink-muted: hsl(var(--brand-h) calc(19% * var(--brand-sat) / 100%) 74%);
+    --ink-soft: hsl(var(--brand-h) calc(13% * var(--brand-sat) / 100%) 58%);
+    --page: hsl(var(--brand-h) calc(27% * var(--brand-sat) / 100%) 9%);
+    --surface: hsl(var(--brand-h) calc(25% * var(--brand-sat) / 100%) 13%);
+    --surface-sunken: hsl(var(--brand-h) calc(28% * var(--brand-sat) / 100%) 10%);
+    --rule: hsl(var(--brand-h) calc(23% * var(--brand-sat) / 100%) 21%);
+    --rule-strong: hsl(var(--brand-h) calc(22% * var(--brand-sat) / 100%) 30%);
+    --lavender-50: hsl(var(--brand-h) calc(31% * var(--brand-sat) / 100%) 15%);
+    --lavender-100: hsl(var(--brand-h) calc(29% * var(--brand-sat) / 100%) 19%);
+    --lavender-200: hsl(var(--brand-h) calc(29% * var(--brand-sat) / 100%) 26%);
+    --lavender-300: hsl(var(--brand-h) calc(29% * var(--brand-sat) / 100%) 39%);
+    --note-yellow: hsl(var(--accent-h) 100% 60%);
+    --note-yellow-soft: hsl(var(--accent-h) 55% 15%);
+    --note-yellow-ink: hsl(var(--accent-h) 100% 77%);
     --positive: #5cc996;
     --positive-wash: #16301f;
     --negative: #ff8f84;
     --negative-wash: #3a1916;
     --caution: #f2c25c;
     --caution-wash: #33290f;
-    --brand: #b8a6f2;
-    --brand-hover: #cbbdf7;
-    --brand-ink: #1a1426;
-    --link: #c4b6f6;
-    --focus: #c4b6f6;
-    --selection: #3a3057;
-    --rail-bg: #0f0c17;
-    --rail-ink: #e6e1f4;
-    --rail-muted: #9f97ba;
+    --brand: hsl(var(--brand-h) calc(75% * var(--brand-sat) / 100%) 80%);
+    --brand-hover: hsl(var(--brand-h) calc(78% * var(--brand-sat) / 100%) 85%);
+    --brand-ink: hsl(var(--brand-h) calc(30% * var(--brand-sat) / 100%) 11%);
+    --link: hsl(var(--brand-h) calc(78% * var(--brand-sat) / 100%) 84%);
+    --focus: hsl(var(--brand-h) calc(78% * var(--brand-sat) / 100%) 84%);
+    --selection: var(--lavender-200);
+    --rail-bg: hsl(var(--brand-h) calc(28% * var(--brand-sat) / 100%) 7%);
+    --rail-ink: hsl(var(--brand-h) calc(35% * var(--brand-sat) / 100%) 92%);
+    --rail-muted: hsl(var(--brand-h) calc(20% * var(--brand-sat) / 100%) 66%);
     --shadow-float: 0 12px 32px rgba(0, 0, 0, 0.5), 0 2px 6px rgba(0, 0, 0, 0.4);
   }
 }
@@ -522,6 +544,15 @@ svg {
 .back-link .icon {
   width: 1rem;
   height: 1rem;
+}
+
+/* On touch screens the back link gets a full-height tap target without shifting the layout. */
+@media (pointer: coarse) {
+  .back-link {
+    min-height: 2.75rem;
+    margin-top: calc(-1 * var(--space-2));
+    margin-bottom: var(--space-2);
+  }
 }
 
 /* ---------------------------------------------------------------- buttons */
