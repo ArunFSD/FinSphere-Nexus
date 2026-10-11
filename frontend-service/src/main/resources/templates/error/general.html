@@ -1,0 +1,14 @@
+<!DOCTYPE html>
+<html lang="en" xmlns:th="http://www.thymeleaf.org" th:replace="~{layouts/bare :: layout('Something went wrong', ~{::pageContent})}">
+<body>
+<th:block th:fragment="pageContent">
+<p class="error-code" aria-hidden="true" th:text="${status}">502</p>
+<h1>That did not work</h1>
+<p th:text="${message}">The service could not complete this request. Try again in a minute.</p>
+<div class="form-actions">
+  <a class="btn btn-primary" th:href="@{/dashboard}" href="/dashboard">Go to the overview</a>
+</div>
+<p class="reference" th:if="${correlationId != null}" th:text="'Reference for support: ' + ${correlationId}">Reference for support: 3f1c</p>
+</th:block>
+</body>
+</html>

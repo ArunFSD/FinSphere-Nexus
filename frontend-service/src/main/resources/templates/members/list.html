@@ -1,0 +1,49 @@
+<!DOCTYPE html>
+<html lang="en" xmlns:th="http://www.thymeleaf.org" th:replace="~{layouts/app :: layout('Members', ~{::pageContent})}">
+<body>
+<th:block th:fragment="pageContent">
+<header class="page-head">
+  <div>
+    <h1>Members</h1>
+    <p>Everyone with an active account, by name.</p>
+  </div>
+  <div class="page-actions">
+    <a class="btn btn-primary" th:href="@{/members/new}" href="/members/new">
+      <svg class="icon" aria-hidden="true"><use href="#i-plus"></use></svg>Add member</a>
+  </div>
+</header>
+
+<section class="panel panel-flush" aria-label="Members">
+  <div class="empty panel-pad" th:if="${page.content.isEmpty()}">
+    <p>No members yet. New accounts appear here a few seconds after they are created.</p>
+  </div>
+  <div class="table-wrap" th:unless="${page.content.isEmpty()}">
+    <table class="table table-stack">
+      <thead>
+        <tr>
+          <th scope="col">Name</th>
+          <th scope="col">Mobile</th>
+          <th scope="col">Care of</th>
+          <th scope="col">Account</th>
+          <th scope="col"><span class="visually-hidden">Actions</span></th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr th:each="member : ${page.content}">
+          <td data-label="Name" class="strong" th:text="${member.fullName != null ? member.fullName : 'Member ' + member.userId}">Ravi Kumar</td>
+          <td data-label="Mobile" class="nowrap" th:text="${fmt.phone(member.phoneNumber)}">98765 43210</td>
+          <td data-label="Care of" th:text="${member.careOf != null ? member.careOf : '—'}">S/o Mani</td>
+          <td data-label="Account" th:text="${fmt.role(member.role)}">Member</td>
+          <td data-label="Actions" class="actions">
+            <a class="btn btn-quiet" th:href="@{/payments/new(member=${member.userId})}" href="/payments/new?member=7">Record payment</a>
+            <a class="btn btn-quiet" th:href="@{/loans/new(member=${member.userId})}" href="/loans/new?member=7">Disburse loan</a>
+          </td>
+        </tr>
+      </tbody>
+    </table>
+  </div>
+  <nav th:replace="~{fragments/schemes :: pager(${page}, '/members')}"></nav>
+</section>
+</th:block>
+</body>
+</html>

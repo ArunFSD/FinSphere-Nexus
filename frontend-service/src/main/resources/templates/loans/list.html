@@ -1,0 +1,57 @@
+<!DOCTYPE html>
+<html lang="en" xmlns:th="http://www.thymeleaf.org" th:replace="~{layouts/app :: layout('Loans', ~{::pageContent})}">
+<body>
+<th:block th:fragment="pageContent">
+<header class="page-head">
+  <div>
+    <h1 th:text="${me.admin} ? 'Loans' : 'Your loans'">Loans</h1>
+    <p th:text="${me.admin} ? 'Daily-collection loans, newest first.' : 'Loans you have taken, with their daily installment.'">Daily-collection loans, newest first.</p>
+  </div>
+  <div class="page-actions" th:if="${me.admin}">
+    <a class="btn btn-primary" th:href="@{/loans/new}" href="/loans/new">
+      <svg class="icon" aria-hidden="true"><use href="#i-plus"></use></svg>Disburse loan</a>
+  </div>
+</header>
+
+<section class="panel panel-flush" aria-label="Loans">
+  <div class="empty panel-pad" th:if="${loans.isEmpty()}">
+    <p th:text="${me.admin} ? 'No loans have been disbursed yet.' : 'You have no loans.'">No loans have been disbursed yet.</p>
+  </div>
+  <div class="table-wrap" th:unless="${loans.isEmpty()}">
+    <table class="table table-stack">
+      <thead>
+        <tr>
+          <th scope="col" th:if="${me.admin}">Borrower</th>
+          <th scope="col" class="num">Loan</th>
+          <th scope="col" class="num">Handed over</th>
+          <th scope="col" class="num">Daily</th>
+          <th scope="col">Collection</th>
+          <th scope="col">Last collection</th>
+          <th scope="col">Status</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr th:each="loan : ${loans}">
+          <td data-label="Borrower" th:if="${me.admin}">
+            <a class="row-link" th:href="@{/payments/new(member=${loan.userId})}" href="/payments/new?member=7"
+               th:text="${loan.memberName != null ? loan.memberName : 'Member ' + loan.userId}">Lakshmi Narayanan</a>
+            <span class="sub" th:text="'Loan ' + ${loan.id} + ', given ' + ${fmt.date(loan.amountGivenDate)}">Loan 12, given 9 Oct 2026</span>
+          </td>
+          <td data-label="Loan" class="num strong" th:text="${fmt.inr(loan.principalAmount)}">₹10,000</td>
+          <td data-label="Handed over" class="num" th:text="${fmt.inr(loan.disbursedAmount)}">₹9,000</td>
+          <td data-label="Daily" class="num" th:text="${fmt.inr(loan.dailyInstallment)}">₹100</td>
+          <td data-label="Collection" th:text="${loan.tenureDays} + ' days, ' + ${fmt.leave(loan.leaveType)}">100 days, Sundays off</td>
+          <td data-label="Last collection" class="nowrap" th:text="${fmt.date(loan.endDate)}">27 Jan 2027</td>
+          <td data-label="Status">
+            <span class="chip chip-open" th:if="${loan.active}">Collecting</span>
+            <span class="chip chip-quiet" th:unless="${loan.active}">Closed</span>
+          </td>
+        </tr>
+      </tbody>
+    </table>
+  </div>
+  <th:block th:if="${page != null}"><nav th:replace="~{fragments/schemes :: pager(${page}, '/loans')}"></nav></th:block>
+</section>
+</th:block>
+</body>
+</html>

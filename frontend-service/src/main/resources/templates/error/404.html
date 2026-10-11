@@ -1,0 +1,15 @@
+<!DOCTYPE html>
+<html lang="en" xmlns:th="http://www.thymeleaf.org" th:replace="~{layouts/bare :: layout('Page not found', ~{::pageContent})}">
+<body>
+<th:block th:fragment="pageContent">
+<p class="error-code" aria-hidden="true">404</p>
+<h1>We could not find that page</h1>
+<p th:if="${detail != null}" th:text="${#strings.endsWith(detail, '.') ? detail : detail + '.'}">Scheme not found.</p>
+<p>The link may be out of date, or the record was removed.</p>
+<div class="form-actions">
+  <a class="btn btn-primary" th:href="@{/dashboard}" href="/dashboard">Go to the overview</a>
+</div>
+<p class="reference" th:if="${correlationId != null}" th:text="'Reference: ' + ${correlationId}">Reference: 3f1c</p>
+</th:block>
+</body>
+</html>

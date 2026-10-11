@@ -1,0 +1,257 @@
+<!DOCTYPE html>
+<html lang="en" xmlns:th="http://www.thymeleaf.org" th:replace="~{layouts/app :: layout(${scheme.plan.name}, ~{::pageContent})}">
+<body>
+<th:block th:fragment="pageContent" th:with="plan=${scheme.plan}, open=${scheme.openMonth}">
+<a class="back-link" th:href="@{/schemes}" href="/schemes"><svg class="icon" aria-hidden="true"><use href="#i-chevron-left"></use></svg>Schemes</a>
+
+<header class="page-head">
+  <div>
+    <h1 th:text="${plan.name}">Gold 1 lakh, January batch</h1>
+    <p th:text="'Runs from ' + ${fmt.date(plan.startDate)} + ' to ' + ${fmt.date(plan.endDate)} + '. Members pay within ' + ${plan.paymentWindowDays != null ? plan.paymentWindowDays : 10} + ' days of each month starting.'">Runs from 1 Jan 2026 to 1 Sep 2027. Members pay within 10 days of each month starting.</p>
+  </div>
+  <div class="page-actions">
+    <span class="chip chip-open" th:if="${open != null}" th:text="'Month ' + ${open.number} + ' auction is next'">Month 7 auction is next</span>
+    <span class="chip chip-positive" th:if="${open == null}">All months settled</span>
+  </div>
+</header>
+
+<section class="panel" aria-labelledby="facts-title">
+  <h2 id="facts-title" class="visually-hidden">Scheme details</h2>
+  <dl class="facts">
+    <div><dt>Chit value</dt><dd class="amount" th:text="${fmt.inr(plan.totalValue)}">₹1,00,000</dd></div>
+    <div><dt>Monthly installment</dt><dd class="amount" th:text="${fmt.inr(plan.monthlyInstallment)}">₹5,000</dd></div>
+    <div><dt>Organiser commission</dt><dd th:text="${fmt.percent(plan.commissionPercentage)} + ' (' + ${fmt.inr(plan.commissionAmount)} + ')'">5% (₹5,000)</dd></div>
+    <div><dt>Highest bid allowed</dt><dd th:text="${fmt.inr(plan.maxBidLimit)}">₹40,000</dd></div>
+    <div><dt>Slots</dt><dd th:text="${plan.filledSlots} + ' of ' + ${plan.totalMembers} + ' taken'">18 of 20 taken</dd></div>
+    <div><dt>Duration</dt><dd th:text="${fmt.plural(plan.durationMonths, 'month', 'months')}">20 months</dd></div>
+  </dl>
+  <div class="month-progress">
+    <ol class="month-track" aria-hidden="true">
+      <li th:each="month : ${scheme.months}" th:class="'month-' + ${month.state}"></li>
+    </ol>
+    <div class="month-track-caption">
+      <span th:text="${scheme.settledCount()} + ' of ' + ${scheme.months.size()} + ' months settled'">6 of 20 months settled</span>
+      <span th:if="${open != null}" th:text="'Month ' + ${open.number} + ' payments: ' + ${fmt.dayMonth(open.opensOn)} + ' to ' + ${fmt.date(open.closesOn)}">Month 7 payments: 1 Jul to 10 Jul 2026</span>
+    </div>
+  </div>
+</section>
+
+<div class="columns columns-main section-gap">
+  <section class="panel" id="slots" aria-labelledby="slots-title">
+    <div class="panel-head">
+      <div>
+        <h2 id="slots-title">Slots</h2>
+        <p th:text="${scheme.full} ? 'Every slot is taken.' : ${fmt.plural(scheme.freeSlots.size(), 'slot is', 'slots are')} + ' free.' + (${me.admin} ? '' : ' Pick one to book it.')">2 slots are free. Pick one to book it.</p>
+      </div>
+    </div>
+    <ul class="slot-board" data-slot-board>
+      <li th:each="slot : ${scheme.slots}">
+        <button th:if="${slot.state == 'free'}" type="button" class="slot slot-free" th:attr="data-slot=${slot.number}"
+                aria-pressed="false" th:aria-label="${slot.label} + ', choose for booking'" th:title="${slot.label}">
+          <span class="slot-number" th:text="${slot.number}">3</span>
+          <span class="slot-holder">Free</span>
+        </button>
+        <div th:unless="${slot.state == 'free'}" class="slot" th:classappend="${'slot-' + slot.state} + (${slot.prized} ? ' slot-prized' : '')"
+             role="img" th:aria-label="${slot.label}" th:title="${slot.label}">
+          <span class="slot-number" aria-hidden="true" th:text="${slot.number}">1</span>
+          <span class="slot-holder slot-holder-name" aria-hidden="true"
+                th:text="${slot.state == 'mine'} ? 'You' : (${slot.holder != null} ? ${fmt.firstName(slot.holder)} : 'Taken')">Ravi</span>
+          <span class="slot-holder slot-holder-initials" aria-hidden="true"
+                th:text="${slot.state == 'mine'} ? 'You' : (${slot.holder != null} ? ${fmt.initials(slot.holder)} : 'Taken')">RK</span>
+        </div>
+      </li>
+    </ul>
+    <ul class="slot-legend">
+      <li><span class="swatch swatch-free"></span>Free</li>
+      <li><span class="swatch swatch-taken"></span>Taken</li>
+      <li><span class="swatch swatch-mine"></span>Yours</li>
+      <li><span class="swatch swatch-taken swatch-prized"></span>Already won an auction</li>
+    </ul>
+  </section>
+
+  <div class="stack">
+    <section class="panel" id="book" aria-labelledby="book-title" th:unless="${scheme.full}">
+      <div class="panel-head">
+        <div>
+          <h2 id="book-title" th:text="${me.admin} ? 'Book a slot for a member' : 'Book a slot'">Book a slot</h2>
+          <p th:unless="${me.admin}" th:text="'You pay ' + ${fmt.inr(plan.monthlyInstallment)} + ' a month, less the dividend from each auction.'">You pay ₹5,000 a month, less the dividend from each auction.</p>
+        </div>
+      </div>
+      <div class="alert alert-error" role="alert" th:if="${slotError != null}">
+        <svg class="icon" aria-hidden="true"><use href="#i-alert"></use></svg>
+        <p th:text="${slotError}">This slot is already taken</p>
+      </div>
+      <form th:action="@{/schemes/{id}/slots(id=${plan.id})}" action="/schemes/1/slots" method="post" data-submit-once data-slot-form data-loading="Booking the slot…">
+        <div class="form-grid">
+          <div class="field" th:if="${me.admin}" th:classappend="${slotErrors['userId'] != null} ? 'field-invalid'">
+            <label for="slot-member">Member</label>
+            <th:block th:if="${memberOptions.ok}">
+              <select class="select" id="slot-member" name="userId" required>
+                <option value="">Choose a member</option>
+                <option th:each="member : ${memberOptions.value.content}" th:value="${member.userId}"
+                        th:selected="${slotForm.userId != null and slotForm.userId == member.userId}"
+                        th:text="${member.fullName} + ', ' + ${fmt.phone(member.phoneNumber)}">Ravi Kumar, 98765 43210</option>
+              </select>
+              <span class="hint" th:if="${memberOptions.value.totalElements > memberOptions.value.content.size()}"
+                    th:text="'Showing the first ' + ${memberOptions.value.content.size()} + ' members by name.'">Showing the first 100 members by name.</span>
+            </th:block>
+            <th:block th:unless="${memberOptions.ok}"><p th:replace="~{fragments/schemes :: failed(${memberOptions})}"></p></th:block>
+            <p class="field-error" th:if="${slotErrors['userId'] != null}"><svg class="icon" aria-hidden="true"><use href="#i-alert"></use></svg><span th:text="${slotErrors['userId']}">Choose a member</span></p>
+          </div>
+          <div class="field" th:classappend="${slotErrors['slotNumber'] != null} ? 'field-invalid'">
+            <label for="slot-number">Slot</label>
+            <select class="select" id="slot-number" name="slotNumber" required data-slot-select>
+              <option value="">Choose a free slot</option>
+              <option th:each="free : ${scheme.freeSlots}" th:value="${free}" th:text="'Slot ' + ${free}"
+                      th:selected="${slotForm.slotNumber != null and slotForm.slotNumber == free}">Slot 3</option>
+            </select>
+            <span class="hint">Tap a free slot on the board to pick it.</span>
+            <p class="field-error" th:if="${slotErrors['slotNumber'] != null}"><svg class="icon" aria-hidden="true"><use href="#i-alert"></use></svg><span th:text="${slotErrors['slotNumber']}">This slot is already taken</span></p>
+          </div>
+        </div>
+        <div class="form-actions">
+          <button class="btn btn-primary" type="submit" data-busy-label="Booking…">Book slot</button>
+        </div>
+      </form>
+    </section>
+
+    <section class="panel" id="auction" aria-labelledby="auction-title" th:if="${me.admin and open != null}">
+      <div class="panel-head">
+        <div>
+          <h2 id="auction-title">Settle an auction</h2>
+          <p>The member who bids the biggest discount wins the chit value minus their bid. The rest of the bid, after commission, is shared by every member as a dividend.</p>
+        </div>
+      </div>
+      <div class="alert alert-error" role="alert" th:if="${auctionError != null}">
+        <svg class="icon" aria-hidden="true"><use href="#i-alert"></use></svg>
+        <p th:text="${auctionError}">Bid above limit</p>
+      </div>
+      <form th:action="@{/schemes/{id}/auction(id=${plan.id})}" action="/schemes/1/auction" method="post" data-submit-once
+            data-auction-preview data-loading="Settling the auction…"
+            th:attr="data-value=${fmt.plain(plan.totalValue)},data-commission=${fmt.plain(plan.commissionPercentage)},data-members=${plan.totalMembers},data-installment=${fmt.plain(plan.monthlyInstallment)},data-confirm='Settle this auction? The month is closed and cannot be reopened.'">
+        <div class="form-grid">
+          <div class="field" th:classappend="${auctionErrors['monthlyCount'] != null} ? 'field-invalid'">
+            <label for="auction-month">Month</label>
+            <select class="select" id="auction-month" name="monthlyCount" required>
+              <th:block th:each="month : ${scheme.months}">
+                <option th:unless="${month.settled()}" th:value="${month.number}"
+                        th:selected="${auctionForm.monthlyCount != null and auctionForm.monthlyCount == month.number}"
+                        th:text="'Month ' + ${month.number} + ' (' + ${fmt.dayMonth(month.opensOn)} + ' to ' + ${fmt.date(month.closesOn)} + ')'">Month 7 (1 Jul to 10 Jul 2026)</option>
+              </th:block>
+            </select>
+            <p class="field-error" th:if="${auctionErrors['monthlyCount'] != null}"><svg class="icon" aria-hidden="true"><use href="#i-alert"></use></svg><span th:text="${auctionErrors['monthlyCount']}">Choose the month</span></p>
+          </div>
+          <div class="field" th:classappend="${auctionErrors['winnerUserId'] != null} ? 'field-invalid'">
+            <label for="auction-winner">Winner</label>
+            <select class="select" id="auction-winner" name="winnerUserId" required>
+              <option value="">Choose the winning member</option>
+              <option th:each="option : ${scheme.winnerOptions}" th:value="${option.userId}" th:text="${option.label}"
+                      th:selected="${auctionForm.winnerUserId != null and auctionForm.winnerUserId == option.userId}">Ravi Kumar (slot 1)</option>
+            </select>
+            <span class="hint" th:if="${scheme.winnerOptions.isEmpty()}">Nobody can win yet: book members into slots first.</span>
+            <p class="field-error" th:if="${auctionErrors['winnerUserId'] != null}"><svg class="icon" aria-hidden="true"><use href="#i-alert"></use></svg><span th:text="${auctionErrors['winnerUserId']}">This member has already won for all their slots</span></p>
+          </div>
+          <div class="field" th:classappend="${auctionErrors['bidAmount'] != null} ? 'field-invalid'">
+            <label for="auction-bid">Winning bid</label>
+            <div class="input-affix"><span class="affix">₹</span>
+              <input class="input" id="auction-bid" name="bidAmount" type="number" inputmode="decimal" min="0" step="0.01" required
+                     th:attr="max=${fmt.plain(plan.maxBidLimit)}" aria-describedby="auction-bid-hint"
+                     th:value="${fmt.plain(auctionForm.bidAmount)}"></div>
+            <span class="hint" id="auction-bid-hint" th:text="'The discount the winner accepts, up to ' + ${fmt.inr(plan.maxBidLimit)} + '.'">The discount the winner accepts, up to ₹40,000.</span>
+            <p class="field-error" th:if="${auctionErrors['bidAmount'] != null}"><svg class="icon" aria-hidden="true"><use href="#i-alert"></use></svg><span th:text="${auctionErrors['bidAmount']}">Bid cannot exceed the max bid limit</span></p>
+          </div>
+        </div>
+
+        <div class="preview" data-preview hidden aria-live="polite">
+          <dl class="facts">
+            <div><dt>Winner receives</dt><dd class="amount" data-out="prize">₹88,000</dd></div>
+            <div><dt>Dividend per member</dt><dd data-out="dividend">₹350</dd></div>
+            <div><dt>Each member pays</dt><dd data-out="payable">₹4,650</dd></div>
+            <div><dt>Commission</dt><dd data-out="commission">₹5,000</dd></div>
+          </dl>
+          <p class="preview-note">The service works out the final amounts when you settle.</p>
+        </div>
+
+        <div class="form-actions">
+          <button class="btn btn-primary" type="submit" data-busy-label="Settling…" th:disabled="${scheme.winnerOptions.isEmpty()}">
+            <svg class="icon" aria-hidden="true"><use href="#i-gavel"></use></svg>Settle auction</button>
+        </div>
+      </form>
+    </section>
+
+    <section class="panel" th:if="${!me.admin and !scheme.mySlots.isEmpty()}" aria-labelledby="mine-title">
+      <h2 id="mine-title">Your slots here</h2>
+      <p th:text="'You hold ' + ${fmt.plural(scheme.mySlots.size(), 'slot', 'slots')} + ' in this scheme.'">You hold 1 slot in this scheme.</p>
+    </section>
+  </div>
+</div>
+
+<section class="panel panel-flush section-gap" id="ledger" aria-labelledby="ledger-title">
+  <div class="panel-head">
+    <div>
+      <h2 id="ledger-title">Monthly ledger</h2>
+      <p>One auction a month. A settled month shows who won and what everyone paid.</p>
+    </div>
+  </div>
+  <p class="scroll-hint">Swipe the table sideways to see every column.</p>
+  <div class="table-scroll">
+    <table class="table ledger">
+      <thead>
+        <tr>
+          <th scope="col">Month</th>
+          <th scope="col">Payment window</th>
+          <th scope="col">Winner</th>
+          <th scope="col" class="num">Winning bid</th>
+          <th scope="col" class="num">Dividend each</th>
+          <th scope="col" class="num">Each pays</th>
+          <th scope="col">Status</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr th:each="month : ${scheme.months}" th:id="'month-' + ${month.number}" th:classappend="${month.state == 'open'} ? 'row-open'">
+          <td data-label="Month" class="month-no" th:text="${month.number}">1</td>
+          <td data-label="Payment window" class="nowrap" th:text="${fmt.dayMonth(month.opensOn)} + ' to ' + ${fmt.date(month.closesOn)}">1 Jan to 11 Jan 2026</td>
+          <td data-label="Winner" th:text="${month.winner != null ? month.winner : '—'}">Ravi Kumar</td>
+          <td data-label="Winning bid" class="num" th:text="${month.settled()} ? ${fmt.inr(month.bid)} : '—'">₹12,000</td>
+          <td data-label="Dividend each" class="num" th:text="${month.settled()} ? ${fmt.inr(month.dividend)} : '—'">₹350</td>
+          <td data-label="Each pays" class="num strong" th:text="${fmt.inr(month.payable)}">₹4,650</td>
+          <td data-label="Status">
+            <span class="chip chip-positive" th:if="${month.state == 'settled'}">Settled</span>
+            <span class="chip chip-open" th:if="${month.state == 'open'}">Next auction</span>
+            <span class="chip chip-quiet" th:if="${month.state == 'upcoming'}">Upcoming</span>
+          </td>
+        </tr>
+      </tbody>
+    </table>
+  </div>
+</section>
+
+<section class="panel panel-flush section-gap" th:if="${me.admin}" aria-labelledby="members-title">
+  <div class="panel-head">
+    <div>
+      <h2 id="members-title">Members</h2>
+      <p>A member can win once for every slot they hold.</p>
+    </div>
+  </div>
+  <div class="empty panel-pad" th:if="${scheme.members.isEmpty()}">
+    <p>Nobody has booked a slot yet.</p>
+  </div>
+  <div class="table-wrap" th:unless="${scheme.members.isEmpty()}">
+    <table class="table">
+      <thead>
+        <tr><th scope="col">Member</th><th scope="col">Slots</th><th scope="col" class="num">Won</th><th scope="col">Can still win</th></tr>
+      </thead>
+      <tbody>
+        <tr th:each="member : ${scheme.members}">
+          <td data-label="Member" class="strong" th:text="${member.name}">Ravi Kumar</td>
+          <td data-label="Slots" class="nowrap" th:text="${#strings.listJoin(member.slots, ', ')}">1, 7</td>
+          <td data-label="Won" class="num" th:text="${member.wins}">1</td>
+          <td data-label="Can still win" th:text="${member.canWin()} ? 'Yes' : 'No'">Yes</td>
+        </tr>
+      </tbody>
+    </table>
+  </div>
+</section>
+</th:block>
+</body>
+</html>

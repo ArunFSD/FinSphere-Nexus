@@ -1,0 +1,27 @@
+<!DOCTYPE html>
+<html lang="en" xmlns:th="http://www.thymeleaf.org" th:replace="~{layouts/app :: layout('Add member', ~{::pageContent})}">
+<body>
+<th:block th:fragment="pageContent">
+<a class="back-link" th:href="@{/members}" href="/members"><svg class="icon" aria-hidden="true"><use href="#i-chevron-left"></use></svg>Members</a>
+<header class="page-head">
+  <div>
+    <h1>Add member</h1>
+    <p>Create the account for someone who joined at the office. Give them the password you set; they sign in with their mobile number.</p>
+  </div>
+</header>
+
+<div class="alert alert-error" role="alert" th:if="${error != null}">
+  <svg class="icon" aria-hidden="true"><use href="#i-alert"></use></svg>
+  <p th:text="${error}">Invalid details! Please check and try again</p>
+</div>
+
+<form class="panel" th:action="@{/members}" action="/members" method="post" data-submit-once data-loading="Adding the member…">
+  <div th:replace="~{fragments/person :: fields(${form}, ${errors}, true)}"></div>
+  <div class="form-actions">
+    <button class="btn btn-primary" type="submit" data-busy-label="Adding…">Add member</button>
+    <a class="btn btn-quiet" th:href="@{/members}" href="/members">Cancel</a>
+  </div>
+</form>
+</th:block>
+</body>
+</html>

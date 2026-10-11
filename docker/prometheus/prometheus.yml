@@ -1,0 +1,18 @@
+global:
+  scrape_interval: 15s
+
+scrape_configs:
+  # Every service registered in Eureka is scraped on /actuator/prometheus, so new instances appear on their own
+  - job_name: finsphere
+    metrics_path: /actuator/prometheus
+    eureka_sd_configs:
+      - server: http://discovery-server:7761/eureka
+        refresh_interval: 30s
+    relabel_configs:
+      - source_labels: [__meta_eureka_app_name]
+        target_label: application
+      # Every instance registers its management port (the gateway keeps actuator off its public port)
+      - source_labels: [__address__, __meta_eureka_app_instance_metadata_management_port]
+        regex: '(.+):\d+;(\d+)'
+        replacement: '${1}:${2}'
+        target_label: __address__

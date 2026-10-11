@@ -1,0 +1,49 @@
+<!DOCTYPE html>
+<html lang="en" xmlns:th="http://www.thymeleaf.org">
+<body>
+<!--/* One scheme in a list: name and money on the left, how far it has run and how full it is on the right.
+       plan: ChitPlanResponse */-->
+<li th:fragment="row(plan)" class="scheme-item">
+  <div>
+    <a class="scheme-name" th:href="@{/schemes/{id}(id=${plan.id})}" href="/schemes/1" th:text="${plan.name}">Gold 1 lakh, January batch</a>
+    <span class="scheme-meta" th:text="${fmt.inr(plan.totalValue)} + ' chit, ' + ${fmt.inr(plan.monthlyInstallment)} + ' a month'">₹1,00,000 chit, ₹5,000 a month</span>
+  </div>
+  <div>
+    <div class="meter-label">
+      <span th:text="${plan.settledMonths >= plan.durationMonths} ? 'All months settled' : 'Month ' + ${plan.settledMonths + 1} + ' of ' + ${plan.durationMonths}">Month 7 of 20</span>
+    </div>
+    <svg class="meter" viewBox="0 0 100 8" preserveAspectRatio="none" aria-hidden="true">
+      <rect class="meter-track" x="0" y="0" width="100" height="8"></rect>
+      <rect class="meter-fill" x="0" y="0" height="8" th:attr="width=${plan.durationMonths > 0 ? plan.settledMonths * 100 / plan.durationMonths : 0}" width="30"></rect>
+    </svg>
+  </div>
+  <div>
+    <div class="meter-label">
+      <span th:text="${plan.filledSlots} + ' of ' + ${plan.totalMembers} + ' slots'">18 of 20 slots</span>
+      <span th:if="${plan.filledSlots < plan.totalMembers}" th:text="${plan.totalMembers - plan.filledSlots} + ' free'">2 free</span>
+    </div>
+    <svg class="meter" viewBox="0 0 100 8" preserveAspectRatio="none" aria-hidden="true">
+      <rect class="meter-track" x="0" y="0" width="100" height="8"></rect>
+      <rect class="meter-fill" x="0" y="0" height="8" th:attr="width=${plan.totalMembers > 0 ? plan.filledSlots * 100 / plan.totalMembers : 0}" width="90"></rect>
+    </svg>
+  </div>
+</li>
+
+<!--/* Pager under a paged list. page: PageResponse, path: list URL */-->
+<nav th:fragment="pager(page, path)" class="pager" aria-label="Pages" th:if="${page.totalPages > 1}">
+  <span th:text="'Page ' + ${page.page + 1} + ' of ' + ${page.totalPages} + ', ' + ${page.totalElements} + ' in all'">Page 1 of 3, 52 in all</span>
+  <span class="pager-links">
+    <a class="btn btn-secondary" th:if="${!page.first}" th:href="@{${path}(page=${page.page - 1})}" href="?page=0">
+      <svg class="icon" aria-hidden="true"><use href="#i-chevron-left"></use></svg>Previous</a>
+    <a class="btn btn-secondary" th:if="${!page.last}" th:href="@{${path}(page=${page.page + 1})}" href="?page=1">
+      Next<svg class="icon" aria-hidden="true"><use href="#i-chevron-right"></use></svg></a>
+  </span>
+</nav>
+
+<!--/* A section that could not be loaded. section: Loaded */-->
+<p th:fragment="failed(section)" class="section-error" role="status">
+  <svg class="icon" aria-hidden="true"><use href="#i-alert"></use></svg>
+  <span th:text="${section.error}">We could not reach the schemes and payments service.</span>
+</p>
+</body>
+</html>

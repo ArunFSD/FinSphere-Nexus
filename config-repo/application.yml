@@ -1,0 +1,121 @@
+# =====================================================================================================
+#  Shared configuration for every FinSphere service (served by config-server).
+#  Secrets and hosts come from environment variables. The defaults after ':' are for LOCAL DEVELOPMENT
+#  ONLY - override FSN_JWT_SECRET, DB_PASSWORD and CONFIG_SERVER_PASSWORD everywhere else.
+# =====================================================================================================
+
+finsphere:
+  security:
+    jwt:
+      # At least 32 bytes. Every service must use the same value.
+      secret: ${FSN_JWT_SECRET:local-dev-only-FinSphereNexus-2026-change-this-secret!}
+      expiration: ${FSN_JWT_EXPIRATION:24h}
+      issuer: finsphere-nexus
+    cookie:
+      name: fsn_auth_token
+      # Browsers accept Secure cookies on http://localhost. Behind real HTTP (no TLS) set FSN_COOKIE_SECURE=false.
+      secure: ${FSN_COOKIE_SECURE:true}
+      same-site: Lax
+  kafka:
+    topic:
+      # Events are keyed by user id, so per-user order is kept within a partition
+      partitions: 3
+      replication-factor: ${KAFKA_REPLICATION_FACTOR:1}
+  logging:
+    dir: ${FINSPHERE_LOGGING_DIR:logs}
+    max-file-size: 50MB
+    max-history: 30
+    total-size-cap: 2GB
+    audit-max-history: 365
+    loki:
+      url: ${LOKI_URL:http://localhost:3100/loki/api/v1/push}
+    method:
+      enabled: true
+      slow-threshold: 500ms
+
+spring:
+  threads:
+    virtual:
+      # JDK 25 virtual threads for request handling, @Async and Kafka listeners
+      enabled: true
+  lifecycle:
+    timeout-per-shutdown-phase: 20s
+  kafka:
+    bootstrap-servers: ${KAFKA_BOOTSTRAP_SERVERS:localhost:7092}
+  datasource:
+    username: ${DB_USERNAME:fsn_user}
+    password: ${DB_PASSWORD:fsn@123}
+    hikari:
+      maximum-pool-size: ${DB_POOL_SIZE:20}
+      minimum-idle: 2
+      # milliseconds: fail fast instead of piling up waiting requests, and flag leaked connections
+      connection-timeout: 5000
+      leak-detection-threshold: 30000
+      max-lifetime: 1800000
+      data-source-properties:
+        # PostgreSQL driver, in seconds: give up quickly on an unreachable database, and never wait forever on a
+        # connection that died without closing (statements themselves are bounded by the transaction timeout)
+        connectTimeout: 5
+        socketTimeout: 60
+        tcpKeepAlive: true
+  transaction:
+    # A request's database transaction is rolled back after 15 s (statements get the remaining time as their
+    # timeout), and the caller gets a 503 instead of a request that hangs
+    default-timeout: 15s
+  jpa:
+    # Never hold a DB connection while rendering the response
+    open-in-view: false
+    properties:
+      hibernate:
+        jdbc:
+          time_zone: UTC
+          batch_size: 50
+        order_inserts: true
+        order_updates: true
+  http:
+    clients:
+      connect-timeout: 2s
+      read-timeout: 10s
+
+server:
+  shutdown: graceful
+  forward-headers-strategy: framework
+  error:
+    include-stacktrace: never
+    include-message: never
+
+eureka:
+  client:
+    service-url:
+      defaultZone: ${EUREKA_URL:http://localhost:7761/eureka/}
+    registry-fetch-interval-seconds: 10
+  instance:
+    prefer-ip-address: true
+    instance-id: ${spring.application.name}:${spring.cloud.client.ip-address}:${server.port}
+    lease-renewal-interval-in-seconds: 10
+    lease-expiration-duration-in-seconds: 30
+
+management:
+  endpoints:
+    web:
+      exposure:
+        include: health,info,prometheus,metrics
+  endpoint:
+    health:
+      show-details: when-authorized
+      probes:
+        enabled: true
+  metrics:
+    tags:
+      application: ${spring.application.name}
+    distribution:
+      percentiles-histogram:
+        http.server.requests: true
+
+logging:
+  level:
+    root: INFO
+    com.finsphere: INFO
+    org.apache.kafka: WARN
+    org.hibernate.SQL: WARN
+    com.netflix.discovery: WARN

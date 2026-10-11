@@ -1,0 +1,94 @@
+<!DOCTYPE html>
+<html lang="en" xmlns:th="http://www.thymeleaf.org" th:replace="~{layouts/app :: layout('Disburse loan', ~{::pageContent})}">
+<body>
+<th:block th:fragment="pageContent">
+<a class="back-link" th:href="@{/loans}" href="/loans"><svg class="icon" aria-hidden="true"><use href="#i-chevron-left"></use></svg>Loans</a>
+<header class="page-head">
+  <div>
+    <h1>Disburse loan</h1>
+    <p>Interest is taken up front: the borrower receives the loan amount minus the interest, then repays the full loan amount in daily installments.</p>
+  </div>
+</header>
+
+<div class="alert alert-error" role="alert" th:if="${error != null}">
+  <svg class="icon" aria-hidden="true"><use href="#i-alert"></use></svg>
+  <p th:text="${error}">Invalid loan details</p>
+</div>
+
+<form class="panel" th:action="@{/loans}" action="/loans" method="post" data-submit-once data-loan-preview data-loading="Disbursing the loan…"
+      data-confirm="Disburse this loan? It is recorded straight away.">
+  <div class="form-grid form-grid-2">
+    <div class="field span-all" th:classappend="${errors['userId'] != null} ? 'field-invalid'">
+      <label for="loan-member">Borrower</label>
+      <select class="select" id="loan-member" name="userId" required>
+        <option value="">Choose a member</option>
+        <option th:each="member : ${members.content}" th:value="${member.userId}"
+                th:selected="${form.userId != null and form.userId == member.userId}"
+                th:text="${member.fullName} + ', ' + ${fmt.phone(member.phoneNumber)}">Lakshmi Narayanan, 98765 43210</option>
+      </select>
+      <span class="hint" th:if="${members.totalElements > members.content.size()}"
+            th:text="'Showing the first ' + ${members.content.size()} + ' members by name.'">Showing the first 100 members by name.</span>
+      <p class="field-error" th:if="${errors['userId'] != null}"><svg class="icon" aria-hidden="true"><use href="#i-alert"></use></svg><span th:text="${errors['userId']}">Choose a member</span></p>
+    </div>
+
+    <div class="field" th:classappend="${errors['principalAmount'] != null} ? 'field-invalid'">
+      <label for="principalAmount">Loan amount</label>
+      <div class="input-affix"><span class="affix">₹</span>
+        <input class="input" id="principalAmount" name="principalAmount" type="number" inputmode="decimal" min="1" step="0.01" required
+               th:value="${fmt.plain(form.principalAmount)}" th:aria-invalid="${errors['principalAmount'] != null} ? 'true' : null"></div>
+      <p class="field-error" th:if="${errors['principalAmount'] != null}"><svg class="icon" aria-hidden="true"><use href="#i-alert"></use></svg><span th:text="${errors['principalAmount']}">Enter the loan amount</span></p>
+    </div>
+
+    <div class="field" th:classappend="${errors['interestDeduction'] != null} ? 'field-invalid'">
+      <label for="interestDeduction">Interest taken up front</label>
+      <div class="input-affix"><span class="affix">₹</span>
+        <input class="input" id="interestDeduction" name="interestDeduction" type="number" inputmode="decimal" min="0" step="0.01" required
+               th:value="${fmt.plain(form.interestDeduction)}" th:aria-invalid="${errors['interestDeduction'] != null} ? 'true' : null"></div>
+      <p class="field-error" th:if="${errors['interestDeduction'] != null}"><svg class="icon" aria-hidden="true"><use href="#i-alert"></use></svg><span th:text="${errors['interestDeduction']}">Interest must be less than the loan amount</span></p>
+    </div>
+
+    <div class="field" th:classappend="${errors['tenureDays'] != null} ? 'field-invalid'">
+      <label for="tenureDays">Number of collections</label>
+      <div class="input-affix">
+        <input class="input" id="tenureDays" name="tenureDays" type="number" inputmode="numeric" min="1" max="3650" step="1" required
+               th:value="${form.tenureDays}" th:aria-invalid="${errors['tenureDays'] != null} ? 'true' : null">
+        <span class="affix affix-end">days</span></div>
+      <p class="field-error" th:if="${errors['tenureDays'] != null}"><svg class="icon" aria-hidden="true"><use href="#i-alert"></use></svg><span th:text="${errors['tenureDays']}">Enter the number of collection days</span></p>
+    </div>
+
+    <div class="field" th:classappend="${errors['startDate'] != null} ? 'field-invalid'">
+      <label for="startDate">First collection</label>
+      <input class="input" id="startDate" name="startDate" type="date" required
+             th:value="${fmt.isoDate(form.startDate)}" th:aria-invalid="${errors['startDate'] != null} ? 'true' : null">
+      <p class="field-error" th:if="${errors['startDate'] != null}"><svg class="icon" aria-hidden="true"><use href="#i-alert"></use></svg><span th:text="${errors['startDate']}">Enter the first collection date</span></p>
+    </div>
+
+    <fieldset class="field span-all">
+      <legend>Collection days</legend>
+      <div class="choice-row">
+        <div class="choice" th:each="leave : ${leaveTypes}">
+          <input type="radio" name="leaveType" th:id="'leave-' + ${leave}" th:value="${leave}" th:checked="${form.leaveType == leave}">
+          <label th:for="'leave-' + ${leave}" th:text="${fmt.leave(leave)}">Sundays off</label>
+        </div>
+      </div>
+      <p class="field-error" th:if="${errors['leaveType'] != null}"><svg class="icon" aria-hidden="true"><use href="#i-alert"></use></svg><span th:text="${errors['leaveType']}">Choose the collection days</span></p>
+    </fieldset>
+  </div>
+
+  <div class="preview" data-preview hidden aria-live="polite">
+    <dl class="facts">
+      <div><dt>Hand over</dt><dd class="amount" data-out="disbursed">₹9,000</dd></div>
+      <div><dt>Collect each day</dt><dd class="amount" data-out="daily">₹100</dd></div>
+      <div><dt>Last collection</dt><dd data-out="endDate">27 Jan 2027</dd></div>
+    </dl>
+    <p class="preview-note">The service works out the final schedule when you disburse.</p>
+  </div>
+
+  <div class="form-actions">
+    <button class="btn btn-primary" type="submit" data-busy-label="Disbursing…">Disburse loan</button>
+    <a class="btn btn-quiet" th:href="@{/loans}" href="/loans">Cancel</a>
+  </div>
+</form>
+</th:block>
+</body>
+</html>

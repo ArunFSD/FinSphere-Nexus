@@ -1,0 +1,28 @@
+<!DOCTYPE html>
+<html lang="en" xmlns:th="http://www.thymeleaf.org" th:replace="~{layouts/auth :: layout('Create an account', ~{::pageContent})}">
+<body>
+<th:block th:fragment="pageContent">
+<div class="auth-card auth-card-wide">
+  <a class="auth-brand auth-brand-compact" th:href="@{/}" href="/">
+    <svg class="brand-mark" aria-hidden="true"><use href="#brand-mark"></use></svg>
+    <span class="brand-name">FinSphere Nexus<span>Chits and loans</span></span>
+  </a>
+  <h1>Create an account</h1>
+  <p class="lead">You can join schemes and see your payments once your account is created.</p>
+
+  <div class="alert alert-error" role="alert" th:if="${error != null}">
+    <svg class="icon" aria-hidden="true"><use href="#i-alert"></use></svg>
+    <p th:text="${error}">Invalid details! Please check and try again</p>
+  </div>
+
+  <form th:action="@{/register}" action="/register" method="post" data-submit-once data-loading="Creating your account…">
+    <div th:replace="~{fragments/person :: fields(${form}, ${errors}, false)}"></div>
+    <div class="form-actions">
+      <button class="btn btn-primary" type="submit" data-busy-label="Creating account…">Create account</button>
+      <a class="btn btn-quiet" th:href="@{/login}" href="/login">I already have an account</a>
+    </div>
+  </form>
+</div>
+</th:block>
+</body>
+</html>

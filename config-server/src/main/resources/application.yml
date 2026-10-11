@@ -1,0 +1,52 @@
+server:
+  port: ${CONFIG_SERVER_PORT:7888}
+  shutdown: graceful
+
+spring:
+  application:
+    name: config-server
+  profiles:
+    # native = read ./config-repo from disk (default), git = clone CONFIG_GIT_URI
+    active: ${CONFIG_SERVER_BACKEND:native}
+  threads:
+    virtual:
+      enabled: true
+  security:
+    user:
+      name: ${CONFIG_SERVER_USERNAME:fsn-config}
+      password: ${CONFIG_SERVER_PASSWORD:fsn-config-local-secret}
+  cloud:
+    config:
+      server:
+        native:
+          # Works from the repository root and from inside the module directory (IDE runs)
+          search-locations: ${CONFIG_REPO_LOCATION:file:./config-repo/,file:../config-repo/}
+
+management:
+  endpoints:
+    web:
+      exposure:
+        include: health,info,prometheus
+  endpoint:
+    health:
+      probes:
+        enabled: true
+
+finsphere:
+  logging:
+    dir: ${FINSPHERE_LOGGING_DIR:logs}
+
+---
+spring:
+  config:
+    activate:
+      on-profile: git
+  cloud:
+    config:
+      server:
+        git:
+          uri: ${CONFIG_GIT_URI:https://github.com/ArunFSD/FinSphere-Nexus.git}
+          default-label: ${CONFIG_GIT_LABEL:main}
+          search-paths: config-repo
+          clone-on-start: true
+          timeout: 10

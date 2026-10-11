@@ -1,0 +1,17 @@
+<!DOCTYPE html>
+<html lang="en" xmlns:th="http://www.thymeleaf.org" th:fragment="layout(title, pageContent)">
+<head th:replace="~{fragments/head :: head(${title})}"></head>
+<body>
+<svg th:replace="~{fragments/icons :: sprite}"></svg>
+<main id="main" class="bare-body" data-loading-region>
+  <div class="bare-card">
+    <a class="auth-brand" th:href="@{/}" href="/">
+      <svg class="brand-mark" aria-hidden="true"><use href="#brand-mark"></use></svg>
+      <span class="brand-name">FinSphere Nexus</span>
+    </a>
+    <th:block th:replace="${pageContent}"></th:block>
+  </div>
+</main>
+<th:block th:replace="~{fragments/loading :: screen}"></th:block>
+</body>
+</html>

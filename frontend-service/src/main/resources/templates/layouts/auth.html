@@ -1,0 +1,35 @@
+<!DOCTYPE html>
+<html lang="en" xmlns:th="http://www.thymeleaf.org" th:fragment="layout(title, pageContent)">
+<head th:replace="~{fragments/head :: head(${title})}"></head>
+<body>
+<a class="skip-link" href="#main">Skip to main content</a>
+<svg th:replace="~{fragments/icons :: sprite}"></svg>
+<div class="auth-body" data-loading-region>
+  <aside class="auth-side">
+    <a class="brand" th:href="@{/}" href="/">
+      <svg class="brand-mark" aria-hidden="true"><use href="#brand-mark"></use></svg>
+      <span class="brand-name">FinSphere Nexus<span>Chits and loans</span></span>
+    </a>
+    <div class="auth-side-copy">
+      <h2>Every scheme, slot and collection in one ledger.</h2>
+      <p>Run the monthly auctions, record daily collections and see who has paid, from the office or from your phone.</p>
+    </div>
+    <ul class="auth-board" aria-hidden="true">
+      <li class="taken">1</li><li class="taken prized">2</li><li>3</li><li class="taken">4</li><li class="taken">5</li>
+      <li class="taken">6</li><li>7</li><li class="taken prized">8</li><li class="taken">9</li><li>10</li>
+    </ul>
+  </aside>
+  <main id="main" class="auth-main" tabindex="-1">
+    <div class="auth-tools">
+      <button type="button" class="icon-button theme-toggle" data-theme-toggle>
+        <svg class="icon icon-moon" aria-hidden="true"><use href="#i-moon"></use></svg>
+        <svg class="icon icon-sun" aria-hidden="true"><use href="#i-sun"></use></svg>
+        <span class="visually-hidden">Switch between light and dark theme</span>
+      </button>
+    </div>
+    <th:block th:replace="${pageContent}"></th:block>
+  </main>
+</div>
+<th:block th:replace="~{fragments/loading :: screen}"></th:block>
+</body>
+</html>

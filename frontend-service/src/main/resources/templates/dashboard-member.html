@@ -1,0 +1,95 @@
+<!DOCTYPE html>
+<html lang="en" xmlns:th="http://www.thymeleaf.org" th:replace="~{layouts/app :: layout('Overview', ~{::pageContent})}">
+<body>
+<th:block th:fragment="pageContent">
+<header class="greeting">
+  <h1 th:text="${fmt.greeting()} + ', ' + ${fmt.firstName(me.fullName)}">Good evening, Priya</h1>
+  <p th:text="${fmt.todayLong()}">Friday, 9 October 2026</p>
+</header>
+
+<div class="columns columns-2">
+  <section class="panel" aria-labelledby="slots-title">
+    <div class="panel-head">
+      <h2 id="slots-title">Your slots</h2>
+    </div>
+    <th:block th:unless="${slots.ok}"><p th:replace="~{fragments/schemes :: failed(${slots})}"></p></th:block>
+    <th:block th:if="${slots.ok}">
+      <ul class="entries" th:unless="${slots.value.isEmpty()}">
+        <li class="entry" th:each="slot : ${slots.value}">
+          <div class="entry-main">
+            <a class="entry-title" th:href="@{/schemes/{id}(id=${slot.planId})}" href="/schemes/1" th:text="${slot.planName}">Gold 1 lakh</a>
+            <span class="entry-sub" th:text="'Joined ' + ${fmt.day(slot.joinedAt)}">Joined 2 Jan 2026</span>
+          </div>
+          <span class="entry-value" th:text="'Slot ' + ${slot.slotNumber}">Slot 7</span>
+        </li>
+      </ul>
+      <div class="empty" th:if="${slots.value.isEmpty()}">
+        <p>You have not joined a scheme yet. Open one of the schemes below to book a slot.</p>
+      </div>
+    </th:block>
+  </section>
+
+  <section class="panel" aria-labelledby="loans-title">
+    <div class="panel-head">
+      <h2 id="loans-title">Your loans</h2>
+    </div>
+    <th:block th:unless="${loans.ok}"><p th:replace="~{fragments/schemes :: failed(${loans})}"></p></th:block>
+    <th:block th:if="${loans.ok}">
+      <ul class="entries" th:unless="${loans.value.isEmpty()}">
+        <li class="entry" th:each="loan : ${loans.value}">
+          <div class="entry-main">
+            <span class="entry-title" th:text="${fmt.inr(loan.principalAmount)} + ' loan'">₹10,000 loan</span>
+            <span class="entry-sub" th:text="${fmt.leave(loan.leaveType)} + ', last collection ' + ${fmt.date(loan.endDate)}">Sundays off, last collection 12 Apr 2026</span>
+          </div>
+          <span class="entry-value"><span th:text="${fmt.inr(loan.dailyInstallment)}">₹100</span><span class="entry-sub">a day</span></span>
+        </li>
+      </ul>
+      <div class="empty" th:if="${loans.value.isEmpty()}">
+        <p>You have no loans.</p>
+      </div>
+    </th:block>
+  </section>
+
+  <section class="panel" aria-labelledby="payments-title">
+    <div class="panel-head">
+      <h2 id="payments-title">Your latest payments</h2>
+    </div>
+    <th:block th:unless="${payments.ok}"><p th:replace="~{fragments/schemes :: failed(${payments})}"></p></th:block>
+    <th:block th:if="${payments.ok}">
+      <ul class="entries" th:unless="${payments.value.content.isEmpty()}">
+        <li class="entry" th:each="payment : ${payments.value.content}">
+          <div class="entry-main">
+            <span class="entry-title" th:text="${fmt.paymentFor(payment.transactionType)}">Chit installment</span>
+            <span class="entry-sub" th:text="${fmt.date(payment.paymentDate)} + ', ' + ${fmt.mode(payment.paymentMode)}">9 Oct 2026, Cash</span>
+          </div>
+          <span class="entry-value" th:text="${fmt.inr(payment.amount)}">₹5,000</span>
+        </li>
+      </ul>
+      <div class="empty" th:if="${payments.value.content.isEmpty()}">
+        <p>No payments recorded for you yet.</p>
+      </div>
+      <p class="panel-foot" th:unless="${payments.value.content.isEmpty()}"><a th:href="@{/payments}" href="/payments">See all your payments</a></p>
+    </th:block>
+  </section>
+
+  <section class="panel" aria-labelledby="open-title">
+    <div class="panel-head">
+      <div>
+        <h2 id="open-title">Schemes you can join</h2>
+        <p>Open a scheme to pick a free slot.</p>
+      </div>
+    </div>
+    <th:block th:unless="${schemes.ok}"><p th:replace="~{fragments/schemes :: failed(${schemes})}"></p></th:block>
+    <th:block th:if="${schemes.ok}">
+      <ul class="scheme-list scheme-list-compact" th:unless="${schemes.value.content.isEmpty()}">
+        <th:block th:each="plan : ${schemes.value.content}"><li th:replace="~{fragments/schemes :: row(${plan})}"></li></th:block>
+      </ul>
+      <div class="empty" th:if="${schemes.value.content.isEmpty()}">
+        <p>No schemes are open right now.</p>
+      </div>
+    </th:block>
+  </section>
+</div>
+</th:block>
+</body>
+</html>

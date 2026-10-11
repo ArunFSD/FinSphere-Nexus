@@ -1,0 +1,37 @@
+server:
+  port: ${FRONTEND_PORT:7000}
+
+spring:
+  thymeleaf:
+    # Templates are compiled once; set SPRING_THYMELEAF_CACHE=false while editing templates locally
+    cache: true
+  mvc:
+    format:
+      # <input type="date"> sends ISO dates (2026-10-09)
+      date: iso
+  web:
+    resources:
+      chain:
+        strategy:
+          content:
+            # /css/app.css is served as /css/app-<hash>.css, so browsers can cache assets for a year
+            enabled: true
+            paths: /**
+      cache:
+        cachecontrol:
+          max-age: 365d
+          cache-public: true
+  http:
+    clients:
+      imperative:
+        # JDK HttpClient on virtual threads, pinned to HTTP/1.1 in BackendClientConfig
+        factory: jdk
+      # The client is shared by every visitor: it must never keep a session cookie from one answer and send it with
+      # another visitor's call. Each call carries only its own visitor's cookie (BackendRequestInterceptor).
+      cookie-handling: disable
+
+finsphere:
+  frontend:
+    time-zone: Asia/Kolkata
+    support-contact: ${FSN_SUPPORT_CONTACT:your branch office}
+    page-size: 20

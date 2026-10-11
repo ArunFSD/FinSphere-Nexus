@@ -1,0 +1,114 @@
+<!DOCTYPE html>
+<html lang="en" xmlns:th="http://www.thymeleaf.org" th:replace="~{layouts/app :: layout('New scheme', ~{::pageContent})}">
+<body>
+<th:block th:fragment="pageContent">
+<a class="back-link" th:href="@{/schemes}" href="/schemes"><svg class="icon" aria-hidden="true"><use href="#i-chevron-left"></use></svg>Schemes</a>
+<header class="page-head">
+  <div>
+    <h1>New scheme</h1>
+    <p>The monthly schedule is created with the scheme: one auction per month, each with its payment window.</p>
+  </div>
+</header>
+
+<div class="alert alert-error" role="alert" th:if="${error != null}">
+  <svg class="icon" aria-hidden="true"><use href="#i-alert"></use></svg>
+  <p th:text="${error}">Invalid scheme details</p>
+</div>
+
+<form class="panel" th:action="@{/schemes}" action="/schemes" method="post" data-submit-once data-scheme-preview
+      data-loading="Creating the scheme and its monthly schedule…">
+  <div class="form-grid form-grid-2">
+    <div class="field span-all" th:classappend="${errors['name'] != null} ? 'field-invalid'">
+      <label for="name">Scheme name</label>
+      <input class="input" id="name" name="name" type="text" required maxlength="200" th:value="${form.name}"
+             aria-describedby="name-hint" th:aria-invalid="${errors['name'] != null} ? 'true' : null">
+      <span class="hint" id="name-hint">For example "Gold 1 lakh, January 2027 batch".</span>
+      <p class="field-error" th:if="${errors['name'] != null}"><svg class="icon" aria-hidden="true"><use href="#i-alert"></use></svg><span th:text="${errors['name']}">Enter a scheme name</span></p>
+    </div>
+
+    <div class="field" th:classappend="${errors['totalValue'] != null} ? 'field-invalid'">
+      <label for="totalValue">Chit value</label>
+      <div class="input-affix"><span class="affix">₹</span>
+        <input class="input" id="totalValue" name="totalValue" type="number" inputmode="decimal" min="1" step="0.01" required
+               th:value="${fmt.plain(form.totalValue)}" th:aria-invalid="${errors['totalValue'] != null} ? 'true' : null"></div>
+      <p class="field-error" th:if="${errors['totalValue'] != null}"><svg class="icon" aria-hidden="true"><use href="#i-alert"></use></svg><span th:text="${errors['totalValue']}">Enter the chit value</span></p>
+    </div>
+
+    <div class="field" th:classappend="${errors['monthlyInstallment'] != null} ? 'field-invalid'">
+      <label for="monthlyInstallment">Monthly installment per member</label>
+      <div class="input-affix"><span class="affix">₹</span>
+        <input class="input" id="monthlyInstallment" name="monthlyInstallment" type="number" inputmode="decimal" min="1" step="0.01" required
+               th:value="${fmt.plain(form.monthlyInstallment)}" th:aria-invalid="${errors['monthlyInstallment'] != null} ? 'true' : null"></div>
+      <p class="field-error" th:if="${errors['monthlyInstallment'] != null}"><svg class="icon" aria-hidden="true"><use href="#i-alert"></use></svg><span th:text="${errors['monthlyInstallment']}">Enter the monthly installment</span></p>
+    </div>
+
+    <div class="field" th:classappend="${errors['totalMembers'] != null} ? 'field-invalid'">
+      <label for="totalMembers">Number of members (slots)</label>
+      <input class="input" id="totalMembers" name="totalMembers" type="number" inputmode="numeric" min="2" max="1000" step="1" required
+             th:value="${form.totalMembers}" th:aria-invalid="${errors['totalMembers'] != null} ? 'true' : null">
+      <p class="field-error" th:if="${errors['totalMembers'] != null}"><svg class="icon" aria-hidden="true"><use href="#i-alert"></use></svg><span th:text="${errors['totalMembers']}">Enter the number of members</span></p>
+    </div>
+
+    <div class="field" th:classappend="${errors['durationMonths'] != null} ? 'field-invalid'">
+      <label for="durationMonths">Duration</label>
+      <div class="input-affix">
+        <input class="input" id="durationMonths" name="durationMonths" type="number" inputmode="numeric" min="1" max="120" step="1" required
+               th:value="${form.durationMonths}" th:aria-invalid="${errors['durationMonths'] != null} ? 'true' : null">
+        <span class="affix affix-end">months</span></div>
+      <p class="field-error" th:if="${errors['durationMonths'] != null}"><svg class="icon" aria-hidden="true"><use href="#i-alert"></use></svg><span th:text="${errors['durationMonths']}">Enter the duration in months</span></p>
+    </div>
+
+    <div class="field" th:classappend="${errors['commissionPercentage'] != null} ? 'field-invalid'">
+      <label for="commissionPercentage">Organiser commission</label>
+      <div class="input-affix">
+        <input class="input" id="commissionPercentage" name="commissionPercentage" type="number" inputmode="decimal" min="0" max="100" step="0.01" required
+               th:value="${fmt.plain(form.commissionPercentage)}" th:aria-invalid="${errors['commissionPercentage'] != null} ? 'true' : null">
+        <span class="affix affix-end">%</span></div>
+      <span class="hint">Of the chit value, taken from each month's pool.</span>
+      <p class="field-error" th:if="${errors['commissionPercentage'] != null}"><svg class="icon" aria-hidden="true"><use href="#i-alert"></use></svg><span th:text="${errors['commissionPercentage']}">Enter the commission percentage</span></p>
+    </div>
+
+    <div class="field" th:classappend="${errors['maxBidLimit'] != null} ? 'field-invalid'">
+      <label for="maxBidLimit">Highest bid allowed</label>
+      <div class="input-affix"><span class="affix">₹</span>
+        <input class="input" id="maxBidLimit" name="maxBidLimit" type="number" inputmode="decimal" min="0" step="0.01" required
+               aria-describedby="maxBidLimit-hint" th:value="${fmt.plain(form.maxBidLimit)}" th:aria-invalid="${errors['maxBidLimit'] != null} ? 'true' : null"></div>
+      <span class="hint" id="maxBidLimit-hint">The largest discount a member may bid in an auction. It cannot be more than the chit value.</span>
+      <p class="field-error" th:if="${errors['maxBidLimit'] != null}"><svg class="icon" aria-hidden="true"><use href="#i-alert"></use></svg><span th:text="${errors['maxBidLimit']}">The bid limit cannot be more than the chit value</span></p>
+    </div>
+
+    <div class="field" th:classappend="${errors['startDate'] != null} ? 'field-invalid'">
+      <label for="startDate">First month starts on</label>
+      <input class="input" id="startDate" name="startDate" type="date" required
+             th:value="${fmt.isoDate(form.startDate)}" th:aria-invalid="${errors['startDate'] != null} ? 'true' : null">
+      <p class="field-error" th:if="${errors['startDate'] != null}"><svg class="icon" aria-hidden="true"><use href="#i-alert"></use></svg><span th:text="${errors['startDate']}">Enter the start date</span></p>
+    </div>
+
+    <div class="field" th:classappend="${errors['paymentDuration'] != null} ? 'field-invalid'">
+      <label for="paymentDuration">Payment window</label>
+      <div class="input-affix">
+        <input class="input" id="paymentDuration" name="paymentDuration" type="number" inputmode="numeric" min="1" max="28" step="1" required
+               aria-describedby="paymentDuration-hint" th:value="${form.paymentDuration}" th:aria-invalid="${errors['paymentDuration'] != null} ? 'true' : null">
+        <span class="affix affix-end">days</span></div>
+      <span class="hint" id="paymentDuration-hint">How long members have to pay after each month starts.</span>
+      <p class="field-error" th:if="${errors['paymentDuration'] != null}"><svg class="icon" aria-hidden="true"><use href="#i-alert"></use></svg><span th:text="${errors['paymentDuration']}">Enter the payment window</span></p>
+    </div>
+  </div>
+
+  <div class="preview" data-preview hidden>
+    <dl class="facts">
+      <div><dt>Commission each month</dt><dd data-out="commission">₹5,000</dd></div>
+      <div><dt>Collected each month</dt><dd data-out="pool">₹1,00,000</dd></div>
+      <div><dt>Last month</dt><dd data-out="lastMonth">Aug 2028</dd></div>
+    </dl>
+    <p class="preview-note" data-out="check">Installments add up to the chit value.</p>
+  </div>
+
+  <div class="form-actions">
+    <button class="btn btn-primary" type="submit" data-busy-label="Creating scheme…">Create scheme</button>
+    <a class="btn btn-quiet" th:href="@{/schemes}" href="/schemes">Cancel</a>
+  </div>
+</form>
+</th:block>
+</body>
+</html>

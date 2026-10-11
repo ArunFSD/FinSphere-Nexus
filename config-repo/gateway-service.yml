@@ -1,0 +1,49 @@
+server:
+  port: ${GATEWAY_PORT:7080}
+
+management:
+  server:
+    # Health and metrics on their own port, which stays inside the network (docker compose does not publish it)
+    port: ${GATEWAY_MANAGEMENT_PORT:7081}
+
+finsphere:
+  gateway:
+    slow-request-threshold: 2s
+
+spring:
+  cloud:
+    gateway:
+      server:
+        webflux:
+          httpclient:
+            # milliseconds; a dead instance must not hang browser requests
+            connect-timeout: 3000
+            response-timeout: 30s
+            pool:
+              # Drop idle connections before the backend's keep-alive does (avoids "connection prematurely closed")
+              max-idle-time: 20s
+              max-life-time: 5m
+              eviction-interval: 30s
+          routes:
+            # Nothing under /actuator is passed on from the public port, so service internals stay private
+            - id: no-public-actuator
+              uri: no://op
+              order: -1
+              predicates:
+                - Path=/actuator,/actuator/**
+              filters:
+                - SetStatus=404
+            - id: auth-service
+              uri: lb://auth-service
+              predicates:
+                - Path=/auth/**
+            - id: chit-finance-service
+              uri: lb://chit-finance-service
+              predicates:
+                - Path=/chits/**,/finance/**
+            # Must stay last: everything else is a page or asset of the web frontend
+            - id: frontend-service
+              uri: lb://frontend-service
+              order: 1000
+              predicates:
+                - Path=/**

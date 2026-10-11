@@ -1,0 +1,105 @@
+<!DOCTYPE html>
+<html lang="en" xmlns:th="http://www.thymeleaf.org">
+<body>
+<!--/* Person details shared by sign-up and the administrators' add-member form.
+       form: RegistrationForm, errors: field -> message, chooseRole: show the role choice */-->
+<div th:fragment="fields(form, errors, chooseRole)" class="form-grid form-grid-2">
+  <div class="field span-all" th:classappend="${errors['fullName'] != null} ? 'field-invalid'">
+    <label for="fullName">Full name</label>
+    <input class="input" id="fullName" name="fullName" type="text" autocomplete="name" required maxlength="100"
+           th:value="${form.fullName}" th:aria-invalid="${errors['fullName'] != null} ? 'true' : null"
+           th:aria-describedby="${errors['fullName'] != null} ? 'fullName-error' : null">
+    <p class="field-error" id="fullName-error" th:if="${errors['fullName'] != null}">
+      <svg class="icon" aria-hidden="true"><use href="#i-alert"></use></svg><span th:text="${errors['fullName']}">Enter the full name</span>
+    </p>
+  </div>
+
+  <div class="field" th:classappend="${errors['phoneNumber'] != null} ? 'field-invalid'">
+    <label for="phoneNumber">Mobile number</label>
+    <div class="input-affix">
+      <span class="affix">+91</span>
+      <input class="input" id="phoneNumber" name="phoneNumber" type="tel" autocomplete="tel-national" inputmode="numeric"
+             required maxlength="15" pattern="[0-9 +\-]{10,15}" th:value="${form.phoneNumber}"
+             th:aria-invalid="${errors['phoneNumber'] != null} ? 'true' : null"
+             aria-describedby="phoneNumber-hint">
+    </div>
+    <span class="hint" id="phoneNumber-hint">This is what you sign in with.</span>
+    <p class="field-error" th:if="${errors['phoneNumber'] != null}">
+      <svg class="icon" aria-hidden="true"><use href="#i-alert"></use></svg><span th:text="${errors['phoneNumber']}">This mobile number already has an account</span>
+    </p>
+  </div>
+
+  <div class="field" th:classappend="${errors['email'] != null} ? 'field-invalid'">
+    <label for="email">E-mail <span class="optional">(optional)</span></label>
+    <input class="input" id="email" name="email" type="email" autocomplete="email" autocapitalize="none" maxlength="100"
+           th:value="${form.email}" th:aria-invalid="${errors['email'] != null} ? 'true' : null">
+    <p class="field-error" th:if="${errors['email'] != null}">
+      <svg class="icon" aria-hidden="true"><use href="#i-alert"></use></svg><span th:text="${errors['email']}">This e-mail address already has an account</span>
+    </p>
+  </div>
+
+  <div class="field span-all" th:classappend="${errors['address'] != null} ? 'field-invalid'">
+    <label for="address">Address</label>
+    <textarea class="textarea" id="address" name="address" autocomplete="street-address" required maxlength="500"
+              rows="2" th:text="${form.address}" th:aria-invalid="${errors['address'] != null} ? 'true' : null"></textarea>
+    <p class="field-error" th:if="${errors['address'] != null}">
+      <svg class="icon" aria-hidden="true"><use href="#i-alert"></use></svg><span th:text="${errors['address']}">Enter the address</span>
+    </p>
+  </div>
+
+  <div class="field" th:classappend="${errors['careOf'] != null} ? 'field-invalid'">
+    <label for="careOf">Care of <span class="optional">(optional)</span></label>
+    <input class="input" id="careOf" name="careOf" type="text" maxlength="100" th:value="${form.careOf}"
+           aria-describedby="careOf-hint" th:aria-invalid="${errors['careOf'] != null} ? 'true' : null">
+    <span class="hint" id="careOf-hint">Father's, mother's or spouse's name, as on the ledger.</span>
+    <p class="field-error" th:if="${errors['careOf'] != null}">
+      <svg class="icon" aria-hidden="true"><use href="#i-alert"></use></svg><span th:text="${errors['careOf']}">Use letters only here, for example S/o Mani</span>
+    </p>
+  </div>
+
+  <fieldset class="field" th:if="${chooseRole}">
+    <legend>Account type</legend>
+    <div class="choice-row">
+      <div class="choice">
+        <input type="radio" id="role-customer" name="role" value="CUSTOMER" th:checked="${form.role != 'ADMIN'}">
+        <label for="role-customer">Member</label>
+      </div>
+      <div class="choice">
+        <input type="radio" id="role-admin" name="role" value="ADMIN" th:checked="${form.role == 'ADMIN'}">
+        <label for="role-admin">Administrator</label>
+      </div>
+    </div>
+    <p class="field-error" th:if="${errors['role'] != null}">
+      <svg class="icon" aria-hidden="true"><use href="#i-alert"></use></svg><span th:text="${errors['role']}">Role is invalid</span>
+    </p>
+  </fieldset>
+  <div class="field" th:unless="${chooseRole}"></div>
+
+  <div class="field" th:classappend="${errors['password'] != null} ? 'field-invalid'">
+    <label for="password">Password</label>
+    <div class="input-affix">
+      <input class="input input-with-reveal" id="password" name="password" type="password" autocomplete="new-password"
+             required minlength="8" maxlength="30" aria-describedby="password-hint"
+             th:aria-invalid="${errors['password'] != null} ? 'true' : null">
+      <button type="button" class="reveal" data-reveal="password" aria-pressed="false">
+        <svg class="icon icon-eye" aria-hidden="true"><use href="#i-eye"></use></svg>
+        <span class="visually-hidden">Show password</span>
+      </button>
+    </div>
+    <span class="hint" id="password-hint">8 to 30 characters, with letters and numbers.</span>
+    <p class="field-error" th:if="${errors['password'] != null}">
+      <svg class="icon" aria-hidden="true"><use href="#i-alert"></use></svg><span th:text="${errors['password']}">Use both letters and numbers in the password</span>
+    </p>
+  </div>
+
+  <div class="field" th:classappend="${errors['confirmPassword'] != null} ? 'field-invalid'">
+    <label for="confirmPassword">Type the password again</label>
+    <input class="input" id="confirmPassword" name="confirmPassword" type="password" autocomplete="new-password"
+           required minlength="8" maxlength="30" th:aria-invalid="${errors['confirmPassword'] != null} ? 'true' : null">
+    <p class="field-error" th:if="${errors['confirmPassword'] != null}">
+      <svg class="icon" aria-hidden="true"><use href="#i-alert"></use></svg><span th:text="${errors['confirmPassword']}">The two passwords do not match</span>
+    </p>
+  </div>
+</div>
+</body>
+</html>

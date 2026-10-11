@@ -1,0 +1,87 @@
+<!DOCTYPE html>
+<html lang="en" xmlns:th="http://www.thymeleaf.org" th:replace="~{layouts/app :: layout('Overview', ~{::pageContent})}">
+<body>
+<th:block th:fragment="pageContent">
+<header class="greeting">
+  <h1 th:text="${fmt.greeting()} + ', ' + ${fmt.firstName(me.fullName)}">Good evening, Arun</h1>
+  <p th:text="${fmt.todayLong()}">Friday, 9 October 2026</p>
+  <ul class="tally">
+    <li th:if="${schemes.ok}"><strong th:text="${schemes.value.totalElements}">4</strong> running schemes</li>
+    <li th:if="${members.ok}"><strong th:text="${members.value.totalElements}">52</strong> members</li>
+    <li th:if="${loans.ok}"><strong th:text="${loans.value.totalElements}">9</strong> loans on the books</li>
+  </ul>
+</header>
+
+<section class="panel" aria-labelledby="running-title">
+  <div class="panel-head">
+    <div>
+      <h2 id="running-title">Running schemes</h2>
+      <p>How far each scheme has run and how many slots are taken.</p>
+    </div>
+    <a class="btn btn-primary" th:href="@{/schemes/new}" href="/schemes/new">
+      <svg class="icon" aria-hidden="true"><use href="#i-plus"></use></svg>New scheme</a>
+  </div>
+  <th:block th:unless="${schemes.ok}"><p th:replace="~{fragments/schemes :: failed(${schemes})}"></p></th:block>
+  <th:block th:if="${schemes.ok}">
+    <ul class="scheme-list" th:unless="${schemes.value.content.isEmpty()}">
+      <th:block th:each="plan : ${schemes.value.content}"><li th:replace="~{fragments/schemes :: row(${plan})}"></li></th:block>
+    </ul>
+    <div class="empty" th:if="${schemes.value.content.isEmpty()}">
+      <p>No schemes are running. Create one to start booking members into slots.</p>
+    </div>
+    <p class="panel-foot" th:if="${schemes.value.totalElements > schemes.value.content.size()}">
+      <a th:href="@{/schemes}" href="/schemes" th:text="'See all ' + ${schemes.value.totalElements} + ' schemes'">See all 12 schemes</a>
+    </p>
+  </th:block>
+</section>
+
+<div class="columns columns-2 section-gap">
+  <section class="panel" aria-labelledby="payments-title">
+    <div class="panel-head">
+      <h2 id="payments-title">Latest payments</h2>
+      <a class="btn btn-secondary" th:href="@{/payments/new}" href="/payments/new">Record payment</a>
+    </div>
+    <th:block th:unless="${payments.ok}"><p th:replace="~{fragments/schemes :: failed(${payments})}"></p></th:block>
+    <th:block th:if="${payments.ok}">
+      <ul class="entries" th:unless="${payments.value.content.isEmpty()}">
+        <li class="entry" th:each="payment : ${payments.value.content}">
+          <div class="entry-main">
+            <span class="entry-title" th:text="${payment.memberName != null ? payment.memberName : 'Member ' + payment.userId}">Ravi Kumar</span>
+            <span class="entry-sub" th:text="${fmt.paymentFor(payment.transactionType)} + ', ' + ${fmt.date(payment.paymentDate)} + ', ' + ${fmt.mode(payment.paymentMode)}">Chit installment, 9 Oct 2026, Cash</span>
+          </div>
+          <span class="entry-value" th:text="${fmt.inr(payment.amount)}">₹5,000</span>
+        </li>
+      </ul>
+      <div class="empty" th:if="${payments.value.content.isEmpty()}">
+        <p>No payments recorded yet.</p>
+      </div>
+      <p class="panel-foot" th:unless="${payments.value.content.isEmpty()}"><a th:href="@{/payments}" href="/payments">See all payments</a></p>
+    </th:block>
+  </section>
+
+  <section class="panel" aria-labelledby="loans-title">
+    <div class="panel-head">
+      <h2 id="loans-title">Latest loans</h2>
+      <a class="btn btn-secondary" th:href="@{/loans/new}" href="/loans/new">Disburse loan</a>
+    </div>
+    <th:block th:unless="${loans.ok}"><p th:replace="~{fragments/schemes :: failed(${loans})}"></p></th:block>
+    <th:block th:if="${loans.ok}">
+      <ul class="entries" th:unless="${loans.value.content.isEmpty()}">
+        <li class="entry" th:each="loan : ${loans.value.content}">
+          <div class="entry-main">
+            <span class="entry-title" th:text="${loan.memberName != null ? loan.memberName : 'Member ' + loan.userId}">Lakshmi Narayanan</span>
+            <span class="entry-sub" th:text="${fmt.inr(loan.principalAmount)} + ' over ' + ${loan.tenureDays} + ' days, last collection ' + ${fmt.date(loan.endDate)}">₹10,000 over 100 days, last collection 20 Jan 2027</span>
+          </div>
+          <span class="entry-value"><span th:text="${fmt.inr(loan.dailyInstallment)}">₹100</span><span class="entry-sub">a day</span></span>
+        </li>
+      </ul>
+      <div class="empty" th:if="${loans.value.content.isEmpty()}">
+        <p>No loans on the books.</p>
+      </div>
+      <p class="panel-foot" th:unless="${loans.value.content.isEmpty()}"><a th:href="@{/loans}" href="/loans">See all loans</a></p>
+    </th:block>
+  </section>
+</div>
+</th:block>
+</body>
+</html>

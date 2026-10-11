@@ -1,0 +1,51 @@
+<!DOCTYPE html>
+<html lang="en" xmlns:th="http://www.thymeleaf.org" th:replace="~{layouts/app :: layout('Payments', ~{::pageContent})}">
+<body>
+<th:block th:fragment="pageContent">
+<header class="page-head">
+  <div>
+    <h1 th:text="${me.admin} ? 'Payments' : 'Your payments'">Payments</h1>
+    <p th:text="${me.admin} ? 'Every collection recorded in the log book, latest first.' : 'Installments you have paid, latest first.'">Every collection recorded in the log book, latest first.</p>
+  </div>
+  <div class="page-actions" th:if="${me.admin}">
+    <a class="btn btn-primary" th:href="@{/payments/new}" href="/payments/new">
+      <svg class="icon" aria-hidden="true"><use href="#i-plus"></use></svg>Record payment</a>
+  </div>
+</header>
+
+<section class="panel panel-flush" aria-label="Payments">
+  <div class="empty panel-pad" th:if="${page.content.isEmpty()}">
+    <p th:text="${me.admin} ? 'No payments recorded yet.' : 'No payments recorded for you yet.'">No payments recorded yet.</p>
+  </div>
+  <div class="table-wrap" th:unless="${page.content.isEmpty()}">
+    <table class="table table-stack">
+      <thead>
+        <tr>
+          <th scope="col">Paid on</th>
+          <th scope="col" th:if="${me.admin}">Member</th>
+          <th scope="col">For</th>
+          <th scope="col">Mode</th>
+          <th scope="col">Collected by</th>
+          <th scope="col" class="num">Amount</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr th:each="payment : ${page.content}">
+          <td data-label="Paid on" class="nowrap" th:text="${fmt.date(payment.paymentDate)}">9 Oct 2026</td>
+          <td data-label="Member" th:if="${me.admin}" class="strong" th:text="${payment.memberName != null ? payment.memberName : 'Member ' + payment.userId}">Ravi Kumar</td>
+          <td data-label="For">
+            <span th:text="${fmt.paymentFor(payment.transactionType)}">Chit installment</span>
+            <span class="sub" th:if="${payment.remarks != null}" th:text="${payment.remarks}">October installment</span>
+          </td>
+          <td data-label="Mode" th:text="${fmt.mode(payment.paymentMode)}">Cash</td>
+          <td data-label="Collected by" th:text="${payment.receivedByInfo}">Selvam (agent)</td>
+          <td data-label="Amount" class="num strong" th:text="${fmt.inr(payment.amount)}">₹5,000</td>
+        </tr>
+      </tbody>
+    </table>
+  </div>
+  <nav th:replace="~{fragments/schemes :: pager(${page}, '/payments')}"></nav>
+</section>
+</th:block>
+</body>
+</html>

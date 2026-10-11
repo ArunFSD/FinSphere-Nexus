@@ -1,0 +1,86 @@
+<!DOCTYPE html>
+<html lang="en" xmlns:th="http://www.thymeleaf.org" th:fragment="layout(title, pageContent)">
+<head th:replace="~{fragments/head :: head(${title})}"></head>
+<body>
+<a class="skip-link" href="#main">Skip to main content</a>
+<svg th:replace="~{fragments/icons :: sprite}"></svg>
+<div class="shell" data-shell data-loading-region>
+  <header class="topbar">
+    <button type="button" class="icon-button" data-nav-open aria-controls="app-nav" aria-expanded="false">
+      <svg class="icon" aria-hidden="true"><use href="#i-menu"></use></svg>
+      <span class="visually-hidden">Open menu</span>
+    </button>
+    <a class="brand" th:href="@{/dashboard}" href="/dashboard">
+      <svg class="brand-mark" aria-hidden="true"><use href="#brand-mark"></use></svg>
+      <span class="brand-name">FinSphere Nexus</span>
+    </a>
+    <button type="button" class="icon-button theme-toggle" data-theme-toggle>
+      <svg class="icon icon-moon" aria-hidden="true"><use href="#i-moon"></use></svg>
+      <svg class="icon icon-sun" aria-hidden="true"><use href="#i-sun"></use></svg>
+      <span class="visually-hidden">Switch between light and dark theme</span>
+    </button>
+  </header>
+
+  <nav class="rail" id="app-nav" aria-label="Main">
+    <a class="brand" th:href="@{/dashboard}" href="/dashboard">
+      <svg class="brand-mark" aria-hidden="true"><use href="#brand-mark"></use></svg>
+      <span class="brand-name">FinSphere Nexus<span>Chits and loans</span></span>
+    </a>
+    <button type="button" class="icon-button rail-close" data-nav-close>
+      <svg class="icon" aria-hidden="true"><use href="#i-close"></use></svg>
+      <span class="visually-hidden">Close menu</span>
+    </button>
+
+    <ul class="nav">
+      <li><a th:href="@{/dashboard}" href="/dashboard" th:aria-current="${nav == 'dashboard'} ? 'page' : null">
+        <svg class="icon" aria-hidden="true"><use href="#i-dashboard"></use></svg>Overview</a></li>
+      <li><a th:href="@{/schemes}" href="/schemes" th:aria-current="${nav == 'schemes'} ? 'page' : null">
+        <svg class="icon" aria-hidden="true"><use href="#i-schemes"></use></svg>Schemes</a></li>
+      <li><a th:href="@{/loans}" href="/loans" th:aria-current="${nav == 'loans'} ? 'page' : null">
+        <svg class="icon" aria-hidden="true"><use href="#i-loans"></use></svg>Loans</a></li>
+      <li><a th:href="@{/payments}" href="/payments" th:aria-current="${nav == 'payments'} ? 'page' : null">
+        <svg class="icon" aria-hidden="true"><use href="#i-payments"></use></svg>Payments</a></li>
+      <li th:if="${me != null and me.admin}"><a th:href="@{/members}" href="/members" th:aria-current="${nav == 'members'} ? 'page' : null">
+        <svg class="icon" aria-hidden="true"><use href="#i-members"></use></svg>Members</a></li>
+      <li><a th:href="@{/account}" href="/account" th:aria-current="${nav == 'account'} ? 'page' : null">
+        <svg class="icon" aria-hidden="true"><use href="#i-account"></use></svg>Your account</a></li>
+    </ul>
+
+    <div class="rail-footer" th:if="${me != null}">
+      <div class="rail-user">
+        <span class="avatar" aria-hidden="true" th:text="${fmt.initials(me.fullName)}">AS</span>
+        <div>
+          <div class="rail-user-name" th:text="${me.fullName}">Arun S</div>
+          <div class="rail-user-role" th:text="${fmt.role(me.role)}">Administrator</div>
+        </div>
+      </div>
+      <div class="rail-actions">
+        <button type="button" class="rail-button theme-toggle" data-theme-toggle>
+          <svg class="icon icon-moon" aria-hidden="true"><use href="#i-moon"></use></svg>
+          <svg class="icon icon-sun" aria-hidden="true"><use href="#i-sun"></use></svg>
+          Theme
+        </button>
+        <form th:action="@{/logout}" action="/logout" method="post" data-submit-once data-loading="Signing you out…">
+          <button type="submit" class="rail-button">
+            <svg class="icon" aria-hidden="true"><use href="#i-logout"></use></svg>
+            Sign out
+          </button>
+        </form>
+      </div>
+    </div>
+  </nav>
+  <div class="scrim" data-nav-close></div>
+
+  <div class="workspace">
+    <main id="main" class="content" tabindex="-1">
+      <div class="alert alert-success" role="status" th:if="${notice != null}" th:class="'alert ' + ${notice.tone.alertClass}">
+        <svg class="icon" aria-hidden="true"><use href="#i-check" th:href="${notice.tone.icon}"></use></svg>
+        <p th:text="${notice.message}">Saved.</p>
+      </div>
+      <th:block th:replace="${pageContent}"></th:block>
+    </main>
+  </div>
+</div>
+<th:block th:replace="~{fragments/loading :: screen}"></th:block>
+</body>
+</html>

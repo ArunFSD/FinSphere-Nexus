@@ -1,0 +1,22 @@
+<!DOCTYPE html>
+<html lang="en" xmlns:th="http://www.thymeleaf.org" th:replace="~{layouts/auth :: layout('Sign out', ~{::pageContent})}">
+<body>
+<!--/* Opened from a bookmark or a typed /logout address. Signing out changes state, so it still takes a POST. */-->
+<th:block th:fragment="pageContent">
+<div class="auth-card">
+  <a class="auth-brand auth-brand-compact" th:href="@{/}" href="/">
+    <svg class="brand-mark" aria-hidden="true"><use href="#brand-mark"></use></svg>
+    <span class="brand-name">FinSphere Nexus<span>Chits and loans</span></span>
+  </a>
+  <h1>Sign out?</h1>
+  <p class="lead" th:text="'You are signed in as ' + ${me.fullName} + '.'">You are signed in as Ravi Kumar.</p>
+  <form th:action="@{/logout}" action="/logout" method="post" data-submit-once data-loading="Signing you out…">
+    <div class="form-actions">
+      <button class="btn btn-primary" type="submit" data-busy-label="Signing out…">Sign out</button>
+      <a class="btn btn-secondary" th:href="@{/dashboard}" href="/dashboard">Stay signed in</a>
+    </div>
+  </form>
+</div>
+</th:block>
+</body>
+</html>
